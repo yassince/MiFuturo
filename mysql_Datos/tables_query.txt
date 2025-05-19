@@ -1,0 +1,46 @@
+-- Tabla: Clientes
+CREATE TABLE Clientes (
+    cliente_id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    apellido VARCHAR(100) NOT NULL,
+    fecha_nacimiento DATE,
+    direccion VARCHAR(255),
+    telefono VARCHAR(20),
+    email VARCHAR(100) UNIQUE,
+    documento_tipo VARCHAR(50),
+    documento_numero VARCHAR(20),
+    fecha_alta TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla: Cuentas
+CREATE TABLE Cuentas (
+    cuenta_id INT AUTO_INCREMENT PRIMARY KEY,
+    cliente_id INT NOT NULL,
+    tipo_cuenta VARCHAR(50) NOT NULL,
+    numero_cuenta VARCHAR(20) UNIQUE NOT NULL,
+    saldo DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
+    fecha_apertura DATE NOT NULL,
+    FOREIGN KEY (cliente_id) REFERENCES Clientes(cliente_id)
+);
+
+-- Tabla: Transacciones
+CREATE TABLE Transacciones (
+    transaccion_id INT AUTO_INCREMENT PRIMARY KEY,
+    cuenta_origen_id INT,
+    cuenta_destino_id INT,
+    tipo_transaccion VARCHAR(50) NOT NULL,
+    monto DECIMAL(15, 2) NOT NULL,
+    fecha_hora TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    descripcion VARCHAR(255),
+    FOREIGN KEY (cuenta_origen_id) REFERENCES Cuentas(cuenta_id),
+    FOREIGN KEY (cuenta_destino_id) REFERENCES Cuentas(cuenta_id)
+);
+
+-- Tabla: Empleados (Opcional)
+CREATE TABLE Empleados (
+    empleado_id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    apellido VARCHAR(100) NOT NULL,
+    cargo VARCHAR(100),
+    fecha_contratacion DATE
+);
