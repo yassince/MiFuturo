@@ -7,16 +7,13 @@ const DATABASE = process.env.DB_DATABASE
 const PORT = process.env.DB_PORT
 const PASSWORD = process.env.DB_PASSWORD
 
-export class conexion {
-    static async createConexion() {
-        const conexion = await mysql.createConnection({
-            host: HOST,
-            database: DATABASE,
-            user: USER,
-            port: PORT,
-            password: PASSWORD
-        })
 
-        return conexion
-    }
-}
+export const pool = mysql.createPool({
+    host: HOST,
+    database: DATABASE,
+    user: USER,
+    port: PORT,
+    password: PASSWORD,
+    waitForConnections: true,
+    connectionLimit: 20
+})
