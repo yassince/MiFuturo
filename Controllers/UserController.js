@@ -2,9 +2,9 @@ import { UserModel } from "../Models/UserModel.js"
 
 export class UserController {
 
-    static async getAll(req, res) {
+    /* static async getAll(req, res) {
         res.send(UserModel.obtenerUsuarios())
-    }
+    } */
 
     static async getUser(req, res) {
         const { name } = req.params

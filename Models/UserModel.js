@@ -1,4 +1,3 @@
-import { users } from "../users.js";
 import { pool } from '../MySQL/conexion.js'
 
 export class UserModel {
@@ -19,7 +18,12 @@ export class UserModel {
 
     /* tema de la creación de conexion esta mal, ya que no se tiene que crear en cada funcion que se haga */
 
-    static async getUser(id) {
+    static async getUser(dni) {
+        const [row, fields] = await pool.execute(
+            'SELECT * FORM Clientes where DNI= ?',
+            [dni]
+        )
+        
 
     }
 
@@ -34,7 +38,7 @@ export class UserModel {
     }
 
     static async update() {
-        
+
     }
 
     static async remove() {
