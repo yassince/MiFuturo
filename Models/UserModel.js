@@ -1,10 +1,10 @@
 import { users } from "../users.js";
-import { conexion } from '../MySQL/conexion.js'
+import { pool } from '../MySQL/conexion.js'
 
 export class UserModel {
 
 
-    static obtenerUsuarios() {
+    static async getAllUsers() {
         return users
     }
 
@@ -17,17 +17,27 @@ export class UserModel {
         return user;
     }
 
+    /* tema de la creación de conexion esta mal, ya que no se tiene que crear en cada funcion que se haga */
+
+    static async getUser(id) {
+
+    }
+
     static async register({ user }) {
-        console.log(user);
-        
-
-        let conex = await conexion.createConexion();
         const date = new Date();
-        const fecha_alta = date.toISOString().split('T')[0];
+        const fecha_alta = date.toISOString().split('T')[0];/* create fecha_alta */
 
-        const [row, fields] = await conex.execute(
+        const [row, fields] = await pool.execute(
             'INSERT INTO Clientes (nombre,apellido,fecha_nacimiento,direccion,telefono,email,dni,fecha_alta) VALUES (?,?,?,?,?,?,?,?)',
             [user.nombre, user.apellidos, user.fecha_nacimiento, user.direccion, user.telefono, user.email, user.dni, fecha_alta]
-        )
+        )/* insert values into clientes */
+    }
+
+    static async update() {
+        
+    }
+
+    static async remove() {
+
     }
 }
