@@ -16,11 +16,18 @@ export class UserController {
     }
 
     static async registerUser(req, res) {
-        const user = req.body
-        const fields = UserModel.register({ user })
-
-        if (fields <= 0) return res.status(400).send('Error al registrar usuario')
-
-        res.send('usuario registrado correctamente')
+        try {
+            const user = req.body
+            const fields = UserModel.register({ user })
+    
+            if (fields <= 0) return res.status(400).send('Error al registrar usuario')
+    
+            res.send('usuario registrado correctamente')
+            
+        } catch (error) {
+            res.status(400).send('Error en el registro')
+        }
     }
+
+    
 }
