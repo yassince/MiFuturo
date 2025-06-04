@@ -1,6 +1,5 @@
 
 import { userRegistrationSchema, userUpdateSchema } from '../Logic/Utils.js';
-import CuentaController from '../Controllers/CuentaController.js';
 import { pool } from '../MySQL/conexion.js';
 import bcrypt from 'bcryptjs'
 
@@ -35,41 +34,13 @@ export class UserModel {
     }
 
     /**
-     * Lo mismo no hace falta este metodo
-     * @param {String} dni primary key of each user
-     * @returns the user object
-     */
-    static async getUserByEmail(email) {
-        if (!email) {
-            throw new Error('email es requerido para obtener la información del usuario.');
-        }
-        try {
-            const [rows, fields] = await pool.execute(
-                'SELECT * FROM Clientes WHERE email = ?',
-                [email]
-            );
-
-            if (rows.length > 0) {
-                return rows[0];
-            } else {
-                return new Error('No se ha encontrado ningun usuario');
-            }
-
-        } catch (error) {
-            console.error('Error al obtener usuario por DNI');
-            throw new Error('Error de base de datos al intentar obtener el usuario.');
-        }
-    }
-
-    /**
-     * FALTA VALIDAR LOS DATOS, SI EXISTEN
+     * 
      * @param {object} object user for registration in database 
-     * @returns true or false depending of affected rows on database
      */
     static async register({ user }) {
         if (!user) return new Error('Es necesario los datos del usuario para poder registrarlo correctamente')
         console.log(user.dni);
-            
+
         const existUser = await this.getUserByDni(user.dni)
 
         //En caso de que el usuario exista
@@ -86,7 +57,7 @@ export class UserModel {
             });
             let errores = Object.values(errors).join(' ')
             console.log(errores);
-            
+
             throw new Error(errores)
         }
 
@@ -150,23 +121,20 @@ export class UserModel {
      * @returns true or false depending of affected rows on database
      */
     static async update({ user }) {
-        
         if (!user) return new Error('Es necesario el usuario para la actualización')
-        
+
         let validation;
         let pass;
         //En caso de que la contraseña que ha enviado el usuario sea el hash que tenemos en la base de datos
-        if(user.contraseña.length > 30){
+        if (user.contraseña.length > 30) {
             validation = userUpdateSchema.safeParse(user)
-        }else{
+        } else {
             //Si el usuario a enviado una nueva contraseña
             const salt = await bcrypt.genSalt(10)
             pass = await bcrypt.hash(user.contraseña, salt)
             validation = userRegistrationSchema.safeParse(user)
-
         }
 
-        
         //Comprobación de la validación de datos en Zod
         if (!validation.success) {
             const errors = {};
@@ -228,7 +196,7 @@ export class UserModel {
 
         } catch (error) {
             console.log(error);
-            
+
             throw new Error('Error al eliminar el usuario.', error);
         }
     }

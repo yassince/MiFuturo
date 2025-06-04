@@ -10,7 +10,9 @@ const __dirname = getDirname(import.meta.url)
 
 const ProductoRouter = express.Router();
 
-ProductoRouter.get('/Productos', ProductoController.showProducts)
+ProductoRouter.get('/Productos', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'dist', 'Productos', 'index.html'))
+})
 
 ProductoRouter.post('/Tarjeta', TarjetaDebitoController.crearTarjeta)
 ProductoRouter.post('/Tarjeta/Bloquear/:id', TarjetaDebitoController.bloquearTarjeta)
