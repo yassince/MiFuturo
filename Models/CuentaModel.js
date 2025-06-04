@@ -1,8 +1,5 @@
 import { pool } from '../MySQL/conexion.js'
 
-/* Función para generar el número de cuenta del usuario */
-
-
 export class CuentaModel {
 
     /**
@@ -26,6 +23,7 @@ export class CuentaModel {
         }
     }
 
+    //Obtener cuenta por dni del usuario
     static async getCuenta(dni) {
         const sql = 'SELECT * FROM cuentas WHERE dni = ?;'
 
@@ -45,6 +43,7 @@ export class CuentaModel {
         }
     }
 
+    //Obtener cuenta por numero de cuenta
     static async getCuentaByNum(num){
         const sql = 'SELECT * FROM cuentas WHERE numero_cuenta = ?'
         
@@ -65,6 +64,7 @@ export class CuentaModel {
 
     }
 
+    //Eliminar cuenta del usuario con dni
     static async eliminarCuenta(dni) {
         const sql = 'DELETE FROM cuentas WHERE dni = ?;'
         
@@ -81,6 +81,7 @@ export class CuentaModel {
         }
     }
 
+    //Actualizar el saldo del la cuenta
     static async updateCuenta(saldo, dni) {
         const sql = 'UPDATE cuentas set saldo = ? WHERE dni = ?'
         

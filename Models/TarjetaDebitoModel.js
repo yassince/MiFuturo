@@ -1,4 +1,3 @@
-// Models/TarjetaDebitoModel.js
 import { pool } from '../MySQL/conexion.js';
 import { generarNumeroTarjeta, generarCVV, obtenerFechaExpiracion } from '../Logic/TarjetaUtils.js';
 
@@ -16,7 +15,6 @@ const TarjetaDebitoModel = {
             const [result] = await pool.execute(sql, [numero_tarjeta, fecha_expiracion, cvv, cuenta_id]);
             return result.insertId;
         } catch (error) {
-            console.error("Error al crear la tarjeta:", error);
             throw new Error("No se pudo crear la tarjeta.");
         }
     },
@@ -27,7 +25,6 @@ const TarjetaDebitoModel = {
             const [rows] = await pool.execute(sql, [cuenta_id]);
             return rows[0];
         } catch (error) {
-            console.error("Error al obtener la tarjeta:", error);
             throw new Error("No se pudo obtener la tarjeta.");
         }
     },
@@ -37,7 +34,6 @@ const TarjetaDebitoModel = {
             const sql = 'UPDATE tarjetas_debito SET activa = 0 WHERE id = ?';
             await pool.execute(sql, [id]);
         } catch (error) {
-            console.error("Error al bloquear la tarjeta:", error);
             throw new Error("No se pudo bloquear la tarjeta.");
         }
     },
@@ -47,7 +43,6 @@ const TarjetaDebitoModel = {
             const sql = 'UPDATE tarjetas_debito SET activa = 1 WHERE id = ?';
             await pool.execute(sql, [id]);
         } catch (error) {
-            console.error("Error al activar la tarjeta:", error);
             throw new Error("No se pudo activar la tarjeta.");
         }
     }

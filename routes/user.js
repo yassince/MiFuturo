@@ -116,8 +116,6 @@ UserRouter.get('/Logout', isAuthenticated, (req, res) => {
                 return res.status(500).send('No se pudo cerrar la sesión correctamente.');
             } else {
                 res.clearCookie('connect.sid');
-
-                console.log('Sesión cerrada correctamente.');
                 res.redirect('/');
             }
         });

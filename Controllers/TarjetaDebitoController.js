@@ -2,6 +2,7 @@ import TarjetaDebitoModel from '../Models/TarjetaDebitoModel.js';
 import { CuentaModel } from '../Models/CuentaModel.js';
 
 const TarjetaDebitoController = {
+    //Crear la tarjeta
     async crearTarjeta(req, res) {
         const dni = req.session.user?.dni;
         if (!dni) return res.redirect('/User/login?mensaje=' + encodeURIComponent('Inicia sesión, por favor.') + '&success=false');
@@ -14,8 +15,6 @@ const TarjetaDebitoController = {
             await TarjetaDebitoModel.crearTarjeta(cuenta.id);
             tarjeta = await TarjetaDebitoModel.obtenerTarjetaPorCuenta(cuenta.id);
         }
-
-        /* Mirar */
         res.redirect('/User/Perfil?mensaje=' + encodeURIComponent('Tarjeta creada correctamente.') + '&success=true');
     },
 
@@ -23,14 +22,14 @@ const TarjetaDebitoController = {
         return await TarjetaDebitoModel.obtenerTarjetaPorCuenta(cuenta_id);
     },
 
+    //Desactivar tarjeta del usuario
     async bloquearTarjeta(req, res) {
-        console.log('entra');
-        
         const id = req.params.id;
         await TarjetaDebitoModel.bloquearTarjeta(id);
         res.redirect('/User/Perfil');
     },
 
+    //Activar la tarjeta del usuario
     async activarTarjeta(req, res) {
         const id = req.params.id;
         await TarjetaDebitoModel.activarTarjeta(id);

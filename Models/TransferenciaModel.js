@@ -17,7 +17,6 @@ export class TransferenciaModel {
         } catch (error) {
             throw new Error('Error al insertar transacción: ', error)
         }
-
     }
 
     //Metodo para que el usuario realice un retiro
@@ -37,7 +36,6 @@ export class TransferenciaModel {
         } catch (error) {
             throw new Error('Error al insertar transacción: ', error)
         }
-
     }
 
     //Metodo para que usuario haga un retiro
@@ -56,7 +54,6 @@ export class TransferenciaModel {
         } catch (error) {
             throw new Error('Error al insertar transacción: ', error)
         }
-
     }
 
     //Metodo para la transferencia al completo
@@ -76,7 +73,6 @@ export class TransferenciaModel {
         } catch (error) {
             throw new Error('Error al insertar transacción: ', error)
         }
-
     }
 
     //metodo para obtener todos los movimientos en los que esta involucrado el usuario
@@ -85,7 +81,7 @@ export class TransferenciaModel {
 
         try {
             const resutl = await pool.execute(sql, [id, id, id, id])
-            
+
             return resutl[0]
         } catch (error) {
             throw new Error('Error al insertar transacción: ', error)

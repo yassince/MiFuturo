@@ -65,11 +65,7 @@ class CuentaController {
 
     }
 
-    /**
-     * 
-     * @param {number} saldo money of his acount 
-     * @param {string} dni foreing key reference of user acount
-     */
+    //Accion de ingresar dinero
     static async updateCuentaIngreso(req, res) {
         const dni = req.session.user.dni;
 
@@ -103,11 +99,8 @@ class CuentaController {
         //redireccionamos al perfil para que el usuario vea los cambios
         res.redirect(`/user/Perfil?mensaje=${'Ingreso hecho correctamente'}&success=true`)
     }
-    /**
-     * 
-     * @param {number} saldo money of his acount 
-     * @param {string} dni foreing key reference of user acount
-     */
+    
+    //Accion del usuario de retiro
     static async updateCuentaRetirar(req, res) {
         const dni = req.session.user.dni;
 
