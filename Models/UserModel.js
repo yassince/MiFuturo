@@ -85,7 +85,8 @@ export class UserModel {
                 errors[err.path.join('.')] = err.message;
             });
             let errores = Object.values(errors).join(' ')
-
+            console.log(errores);
+            
             throw new Error(errores)
         }
 

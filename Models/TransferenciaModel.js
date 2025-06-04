@@ -15,8 +15,6 @@ export class TransferenciaModel {
             ])
 
         } catch (error) {
-            console.log(error);
-
             throw new Error('Error al insertar transacción: ', error)
         }
 
@@ -68,8 +66,6 @@ export class TransferenciaModel {
             ])
 
         } catch (error) {
-            console.log(error);
-            
             throw new Error('Error al insertar transacción: ', error)
         }
 
@@ -89,8 +85,6 @@ export class TransferenciaModel {
             ])
 
         } catch (error) {
-            console.log(error);
-
             throw new Error('Error al insertar transacción: ', error)
         }
 
@@ -104,8 +98,6 @@ export class TransferenciaModel {
             
             return resutl[0]
         } catch (error) {
-            console.log(error);
-
             throw new Error('Error al insertar transacción: ', error)
         }
     }

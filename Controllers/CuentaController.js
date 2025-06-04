@@ -1,7 +1,11 @@
 import { CuentaModel } from "../Models/CuentaModel.js";
 import { generarNumeroCuenta } from "../Logic/Utils.js";
+import path from 'path'
+import { getDirname } from '../Logic/dirname.js';
+const __dirname = getDirname(import.meta.url)
 
 import { TransferenciaController } from "./TransferenciaController.js";
+import { UserController } from "./UserController.js";
 
 
 class CuentaController {
@@ -71,7 +75,7 @@ class CuentaController {
 
         //Falta obtener el numeor a ingresar
         let saldo = Number(req.body.ingreso)
-        
+
         //Obtenemos la cuenta para actualizar info
         const cuenta = await CuentaModel.getCuenta(dni)
 
@@ -119,8 +123,6 @@ class CuentaController {
         //Actualizamos el saldo
         let retiro = cuenta.saldo - saldo
 
-        console.log(retiro);
-
         if (retiro < 0) return res.redirect('/User/Perfil?mensaje=' + encodeURIComponent('Su saldo actual no le permite hacer retirar, por favor ingrese dinero.') + '&success=false')
 
         try {
@@ -141,9 +143,65 @@ class CuentaController {
         res.redirect(`/user/Perfil?mensaje=${'Retiro hecho correctamente'}&success=true`)
     }
 
-    //Realizar la transferencia del usuario
-    static async transferencia() {
+    //Mostramos el formulario de transferencia
+    static async showTransferenciaFrom(req, res) {
+        res.sendFile(path.join(__dirname, '..', 'dist', 'Transferencia', 'index.html'))
+    }
 
+    //Realizar la transferencia del usuario
+    static async transferencia(req, res) {
+        const datos = req.body
+
+        //Obtenemos la cuenta de destino
+        let cuentaDestino
+        try {
+            cuentaDestino = await CuentaModel.getCuentaByNum(datos.cuenta)
+            console.log(cuentaDestino);
+
+        } catch (error) {
+            res.redirect(`/user/Perfil?mensaje=${'Número de cuenta no existe'}&success=false`)
+        }
+
+        //obtenenos la cuenta de origen
+        let cuentaOrigen
+        try {
+            cuentaOrigen = await CuentaModel.getCuenta(req.session.user.dni)
+            console.log(cuentaOrigen);
+        } catch (error) {
+            res.redirect(`/user/Perfil?mensaje=${'Error a la hora de realizar la transferencia'}&success=false`)
+        }
+
+        //Caso que el usuario quiera hacer una transferencia a si mismo
+        if (cuentaDestino.numero_cuenta == cuentaOrigen.numero_cuenta) return res.redirect(`/user/Perfil?mensaje=${'No puedes hacer una transferencia a ti mismo'}&success=false`)
+
+
+        //Actualizamos la cuenta destino
+        let saldoDestino = Number(cuentaDestino.saldo) + Number(datos.cantidad)
+        if (saldoDestino <= 0) return res.redirect(`/user/Perfil?mensaje=${'No tienes fondos suficientes para realizar la transferencia'}&success=false`)
+
+        //Actualizamos la cuenta de origen
+        let saldoOrigen = Number(cuentaOrigen.saldo) - Number(datos.cantidad)
+
+        //Actualizamos el saldo de las cuentas
+        try {
+            await CuentaModel.updateCuenta(saldoOrigen, cuentaOrigen.dni)
+            await CuentaModel.updateCuenta(saldoDestino, cuentaDestino.dni)
+        } catch (error) {
+            res.redirect(`/user/Perfil?mensaje=${'Error al realizar la transferencia'}&success=false`)
+        }
+
+        //obtenemos el usuario beneficiario de la transferencia
+        const usuarioBeneficiario = await UserController.getUserByDni(cuentaDestino.dni);
+        const nombre = usuarioBeneficiario.nombre+' '+usuarioBeneficiario.apellidos
+
+        console.log(nombre);
+        
+        //Realizamos el movimiento para el los dos usuarios sepan que ha pasado
+        TransferenciaController.transferencia({ cuentaOrigen }, { cuentaDestino }, datos.cantidad, nombre)
+
+
+        //Redireccionamos al perfil y mostramos mensaje de feedback
+        res.redirect(`/user/Perfil?mensaje=${'Transferencia realizada correctamente'}&success=true`)
     }
 }
 

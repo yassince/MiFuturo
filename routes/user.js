@@ -1,14 +1,15 @@
 import express from 'express'
 import { UserController } from '../Controllers/UserController.js';
 import CuentaController from '../Controllers/CuentaController.js';
-import { isAuthenticated, plantillaMovimiento } from '../Logic/Utils.js';
+import { isAuthenticated, plantillaMovimiento, plantillaTarjeta } from '../Logic/Utils.js';
 import path from 'path';
 import fs from 'fs'
 import { getDirname } from '../Logic/dirname.js';
+import { TransferenciaController } from '../Controllers/TransferenciaController.js';
 
 /* protección contra actaque de formularios */
 import csrfProtection from '../Logic/csrf.js';
-import { TransferenciaController } from '../Controllers/TransferenciaController.js';
+import TarjetaDebitoController from '../Controllers/TarjetaDebitoController.js';
 const __dirname = getDirname(import.meta.url)
 
 const UserRouter = express.Router();
@@ -61,13 +62,28 @@ UserRouter.get('/Perfil', [isAuthenticated, csrfProtection], async (req, res) =>
     });
 
     //Obtenemos los movimientos del usuario
-
     const movimientos = await TransferenciaController.getAllMovimientos(cuenta.id)
     const bloqueMovimientos = movimientos.map(plantillaMovimiento).join('');
 
+    //obtenemos tarjeta en caso de que el usuario lo tenga
+    const tarjetaDebito = await TarjetaDebitoController.getTarjeta(cuenta.id)
 
-
-
+    let bloqueTarjeta
+    if (tarjetaDebito) {
+        bloqueTarjeta = plantillaTarjeta
+            .replace(/__NUMERO_TARJETA__/g, tarjetaDebito.numero_tarjeta)
+            .replace(/__FECHA_EXPIRACION__/g, tarjetaDebito.fecha_expiracion)
+            .replace(/__CVV__/g, tarjetaDebito.cvv)
+            .replace(/__BOTON_BLOQUEAR_ACTIVAR__/g,
+                tarjetaDebito.activa
+                    ? `<form method="POST" action="/Productos/Tarjeta/Bloquear/${tarjetaDebito.id}">
+             <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition">Bloquear</button>
+           </form>`
+                    : `<form method="POST" action="/Productos/Tarjeta/Activar/${tarjetaDebito.id}">
+             <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition">Activar</button>
+           </form>`
+            );
+    }
 
     const htmlPath = path.join(__dirname, '..', 'dist', 'Perfil', 'index.html');
     const csrfToken = req.csrfToken();
@@ -85,7 +101,8 @@ UserRouter.get('/Perfil', [isAuthenticated, csrfProtection], async (req, res) =>
         .replace(/__NUM-CUENTA__/g, cuenta.numero_cuenta)
         .replace(/__SALDO__/g, cuenta.saldo)
         .replace(/__FECHA-APERTURA__/g, fecha_apertura)
-        .replace(/__MOVIMIENTOS__/g, bloqueMovimientos);
+        .replace(/__MOVIMIENTOS__/g, bloqueMovimientos)
+        .replace(/__PRODUCTOS__/g, bloqueTarjeta ?? '');
 
     res.send(template)
 })

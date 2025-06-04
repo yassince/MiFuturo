@@ -1,4 +1,3 @@
-import { sl } from 'zod/v4/locales';
 import { pool } from '../MySQL/conexion.js'
 
 /* Función para generar el número de cuenta del usuario */
@@ -35,6 +34,7 @@ export class CuentaModel {
             
             return {
                 id: rows[0].cuenta_id,
+                dni: rows[0].dni,
                 numero_cuenta: rows[0].numero_cuenta,
                 saldo: rows[0].saldo,
                 fecha_apertura: rows[0].fecha_apertura
@@ -43,6 +43,26 @@ export class CuentaModel {
         } catch (error) {
             throw new Error('No se ha podido encontrar la cuenta')
         }
+    }
+
+    static async getCuentaByNum(num){
+        const sql = 'SELECT * FROM cuentas WHERE numero_cuenta = ?'
+        
+        try {
+            const [rows] = await pool.query(sql, [num]);
+            
+            return {
+                id: rows[0].cuenta_id,
+                dni: rows[0].dni,
+                numero_cuenta: rows[0].numero_cuenta,
+                saldo: rows[0].saldo,
+                fecha_apertura: rows[0].fecha_apertura
+            }
+
+        } catch (error) {
+            throw new Error('No se ha podido encontrar la cuenta')
+        }
+
     }
 
     static async eliminarCuenta(dni) {
@@ -57,8 +77,6 @@ export class CuentaModel {
                 return false
             }
         } catch (error) {
-            console.log(error);
-            
             throw new Error('No se ha podido eliminar la cuenta del usuario')
         }
     }
@@ -70,8 +88,6 @@ export class CuentaModel {
             const [rows] = await pool.execute(sql, [saldo, dni])
             return
         } catch (error) {
-            console.log(error);
-            
             throw new Error('Error al actualizar los datos de la cuenta del usuario')
         }
     }

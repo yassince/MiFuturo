@@ -16,12 +16,12 @@ import { z } from 'zod';
 const validateDniLetter = (dni) => {
 
     if (typeof dni !== 'string' || !/^\d{8}[A-Z]$/i.test(dni)) return false;
-    
+
     const numero = parseInt(dni.substring(0, 8), 10);
     const letra = dni.substring(8, 9).toUpperCase();
     const letrasValidas = 'TRWAGMYFPDXBNJZSQVHLCKE';
     const letraCalculada = letrasValidas.charAt(numero % 23);
-    
+
     return letraCalculada === letra;
 };
 
@@ -75,21 +75,27 @@ export const userRegistrationSchema = z.object({
     fecha_nacimiento: z.string({
         required_error: "La fecha de nacimiento es obligatoria.",
     })
-        .trim() //quita los espacios
-        .regex(/^\d{4}-\d{2}-\d{2}$/)
-        .transform((fecha) => new Date(fecha))
+        .trim()
+        .transform((fecha) => {
+            const parsed = new Date(fecha);
+            return parsed;
+        })
         .refine((date) => {
-            if (isNaN(date.getTime())) {
-                return false;
-            }
+            if (!(date instanceof Date) || isNaN(date.getTime())) return false;
+
             const hoy = new Date();
-            let edad = hoy.getFullYear() - date.getFullYear();
-            const m = hoy.getMonth() - date.getMonth();
-            if (m < 0 || (m === 0 && hoy.getDate() < date.getDate())) {
-                edad--;
-            }
-            return edad >= 18;
-        }, { message: "Debe tener al menos 18 años para registrarse." }),
+
+            const cumple18 = new Date(date);
+            cumple18.setFullYear(cumple18.getFullYear() + 18);
+
+            const hoyStartOfDay = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+            const cumple18StartOfDay = new Date(cumple18.getFullYear(), cumple18.getMonth(), cumple18.getDate());
+
+            return hoyStartOfDay >= cumple18StartOfDay;
+        }, {
+            message: "Debe tener al menos 18 años para registrarse.",
+        }),
+
 
 
     nombre: z.string({
@@ -134,21 +140,27 @@ export const userUpdateSchema = z.object({
     fecha_nacimiento: z.string({
         required_error: "La fecha de nacimiento es obligatoria.",
     })
-        .trim() //quita los espacios
-        .regex(/^\d{4}-\d{2}-\d{2}$/)
-        .transform((fecha) => new Date(fecha))
+        .trim()
+        .transform((fecha) => {
+            const parsed = new Date(fecha);
+            return parsed;
+        })
         .refine((date) => {
-            if (isNaN(date.getTime())) {
-                return false;
-            }
+            if (!(date instanceof Date) || isNaN(date.getTime())) return false;
+
             const hoy = new Date();
-            let edad = hoy.getFullYear() - date.getFullYear();
-            const m = hoy.getMonth() - date.getMonth();
-            if (m < 0 || (m === 0 && hoy.getDate() < date.getDate())) {
-                edad--;
-            }
-            return edad >= 18;
-        }, { message: "Debe tener al menos 18 años para registrarse." }),
+
+            const cumple18 = new Date(date);
+            cumple18.setFullYear(cumple18.getFullYear() + 18);
+
+            const hoyStartOfDay = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+            const cumple18StartOfDay = new Date(cumple18.getFullYear(), cumple18.getMonth(), cumple18.getDate());
+
+            return hoyStartOfDay >= cumple18StartOfDay;
+        }, {
+            message: "Debe tener al menos 18 años para registrarse.",
+        }),
+
 
 
     nombre: z.string({
@@ -180,26 +192,26 @@ export const userUpdateSchema = z.object({
 
 //Para mostar los movimientos del usuario en el perfil
 export function plantillaMovimiento(mov) {
-  const fecha = new Date(mov.fecha_hora);
-  const fechaFormateada = `${fecha.toLocaleDateString('en-GB', {
-    weekday: 'short',
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric'
-  })}, ${fecha.toLocaleTimeString('es-ES', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
-  })}`;
+    const fecha = new Date(mov.fecha_hora);
+    const fechaFormateada = `${fecha.toLocaleDateString('en-GB', {
+        weekday: 'short',
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+    })}, ${fecha.toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    })}`;
 
-  const tipoRaw = mov.tipo_transaccion.toLowerCase();
-  const esApertura = tipoRaw === 'apertura';
-  const esEntrada = esApertura || mov.direccion === 'entrada';
-  const tipo = tipoRaw.charAt(0).toUpperCase() + tipoRaw.slice(1);
-  const color = esEntrada ? 'text-green-700' : 'text-red-700';
-  const signo = esEntrada ? '+' : '-';
+    const tipoRaw = mov.tipo_transaccion.toLowerCase();
+    const esApertura = tipoRaw === 'apertura';
+    const esEntrada = esApertura || mov.direccion === 'entrada';
+    const tipo = tipoRaw.charAt(0).toUpperCase() + tipoRaw.slice(1);
+    const color = esEntrada ? 'text-green-700' : 'text-red-700';
+    const signo = esEntrada ? '+' : '-';
 
-  return `
+    return `
     <div class="movimiento border-b-2 border-gray-800 pb-4 mb-4">
       <div class="tituloDinerof flex justify-between text-3xl">
         <span class="${color}">${tipo}</span>
@@ -212,4 +224,33 @@ export function plantillaMovimiento(mov) {
     </div>
   `;
 }
+
+export const plantillaTarjeta = `
+<h1 class="text-center text-3xl text-blue-800 font-bold mt-4">
+    Productos
+</h1>
+<div class="bg-gradient-to-br from-zinc-800 to-zinc-900 text-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-auto mt-6 border border-gray-700">
+  <h2 class="text-lg font-bold mb-4">💳 Tarjeta de Débito</h2>
+
+  <div class="text-2xl font-mono tracking-widest mb-6">
+    __NUMERO_TARJETA__
+  </div>
+
+  <div class="flex justify-between items-center text-sm font-semibold mb-4">
+    <div>
+      <p class="text-gray-400">Válida hasta</p>
+      <p class="text-white text-base">__FECHA_EXPIRACION__</p>
+    </div>
+    <div class="text-right">
+      <p class="text-gray-400">CVV</p>
+      <p class="text-white text-base">__CVV__</p>
+    </div>
+  </div>
+
+  <div class="mt-4 flex justify-end">
+    __BOTON_BLOQUEAR_ACTIVAR__
+  </div>
+</div>
+`;
+
 

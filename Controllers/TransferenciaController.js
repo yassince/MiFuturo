@@ -16,8 +16,14 @@ export class TransferenciaController{
         const fechaHora = new Date().toISOString().slice(0, 19).replace('T', ' ');
         await TransferenciaModel.retiro(cuenta.id, cuenta.saldo, fechaHora, `Retiro de ${cuenta.saldo} &euro;`)
     }
-
+    
     static async getAllMovimientos(id){
         return await TransferenciaModel.getmovimientos(id);
     }
+    
+    static async transferencia({cuentaOrigen}, {cuentaDestino}, cantidad, nombre){
+        const fechaHora = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        await TransferenciaModel.transferencia(cuentaOrigen.id, cuentaDestino.id , 'Transferencia' ,cantidad, fechaHora, `Transferencia realizada a ${nombre} de ${cantidad} &euro;`)
+    }
+   
 }
