@@ -9,6 +9,7 @@ import https from 'https'
 import ProductoRouter from './routes/Productos.js';
 import UserRouter from './routes/user.js';
 import cuentaRouter from './routes/cuenta.js';
+import adminRouter from './routes/admin.js';
 
 export const app = express();
 const PORT = process.env.PORT ?? 443;
@@ -46,6 +47,7 @@ app.use('/Assets', express.static(path.join(distPath, 'assets')));
 app.use('/User', UserRouter)
 app.use('/Cuenta', cuentaRouter)
 app.use('/Productos', ProductoRouter)
+app.use('/admin', adminRouter)
 
 //Rutas estaticas
 app.get('/', (_, res) => {

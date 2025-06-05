@@ -1,4 +1,5 @@
 import express from 'express'
+import path from 'path';
 import { isAuthenticated } from '../Logic/Utils.js';
 import { getDirname } from '../Logic/dirname.js';
 import TarjetaDebitoController from '../Controllers/TarjetaDebitoController.js';

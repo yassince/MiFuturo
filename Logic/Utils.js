@@ -25,6 +25,16 @@ const validateDniLetter = (dni) => {
     return letraCalculada === letra;
 };
 
+export function isAdmin(req, res, next) {
+    // Verifica si hay sesión activa y el usuario es admin
+    if (req.session && req.session.user && req.session.user.email === 'admin@mifuturo.com') {
+        return next();
+    }
+
+    // Si no es admin, redirigir o bloquear
+    return res.redirect('/');
+}
+
 //Función para crear el numero de cuenta del usuario
 export async function generarNumeroCuenta() {
     const banco = '1234';
@@ -225,7 +235,7 @@ export function plantillaMovimiento(mov) {
   `;
 }
 
-export const plantillaTarjeta = `
+export const plantillaTarjetaPerfil = `
 <h1 class="text-center text-3xl text-blue-800 font-bold mt-4">
     Productos
 </h1>
@@ -252,5 +262,58 @@ export const plantillaTarjeta = `
   </div>
 </div>
 `;
+export const plantillaTarjeta = `
+<h1 class="text-center text-3xl text-blue-800 font-bold mt-4">
+    Productos
+</h1>
+<div class="bg-gradient-to-br from-zinc-800 to-zinc-900 text-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-auto mt-6 border border-gray-700">
+  <h2 class="text-lg font-bold mb-4">💳 Tarjeta de Débito</h2>
+
+  <div class="text-2xl font-mono tracking-widest mb-6">
+    __NUMERO_TARJETA__
+  </div>
+
+  <div class="flex justify-between items-center text-sm font-semibold mb-4">
+    <div>
+      <p class="text-gray-400">Válida hasta</p>
+      <p class="text-white text-base">__FECHA_EXPIRACION__</p>
+    </div>
+    <div class="text-right">
+      <p class="text-gray-400">CVV</p>
+      <p class="text-white text-base">__CVV__</p>
+    </div>
+  </div>
+</div>
+`;
+
+export const bloqueUsuario = `
+<div class="bg-white rounded-xl shadow-md p-4 mb-4">
+  <h3 class="text-lg font-bold text-gray-800 mb-1">__NOMBRE__ __APELLIDOS__</h3>
+  <p class="text-sm text-gray-600"><span class="font-medium">Email:</span> __EMAIL__</p>
+  <p class="text-sm text-gray-600"><span class="font-medium">DNI:</span> __DNI__</p>
+  <p class="text-sm text-gray-600"><span class="font-medium">Teléfono:</span> __TELEFONO__</p>
+  <p class="text-sm text-gray-600"><span class="font-medium">Dirección:</span> __DIRECCION__</p>
+  <p class="text-sm text-gray-600"><span class="font-medium">Fecha de Nacimiento:</span> __FECHA_NAC__</p>
+  <p class="text-sm text-gray-600"><span class="font-medium">Fecha de Alta:</span> __FECHA_ALTA__</p>
+</div>
+`;
+
+export const plantillaCuenta = `
+<div class="bg-white shadow-md rounded-xl p-5 mb-4 border border-gray-200">
+  <div class="flex justify-between items-center mb-3">
+    <div>
+      <p class="text-sm text-gray-600 font-medium">Número de cuenta</p>
+      <p class="text-lg font-mono text-blue-700">__NUMERO_CUENTA__</p>
+    </div>
+    <div class="text-right">
+      <p class="text-sm text-gray-600 font-medium">Saldo</p>
+      <p class="text-lg font-semibold text-green-600">__SALDO__ €</p>
+    </div>
+  </div>
+  <p class="text-sm text-gray-500">Fecha de apertura: <span class="font-medium text-gray-700">__FECHA_APERTURA__</span></p>
+</div>
+`;
+
+
 
 

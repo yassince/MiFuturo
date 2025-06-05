@@ -73,6 +73,10 @@ export class UserController {
         try {
             const userData = await UserModel.login({ user })
             req.session.user = userData; /* Guardamos el login del usuario */
+
+            if (req.session.user.email === 'admin@mifuturo.com') {
+                return res.redirect('/Admin/');
+            }
             res.redirect(`/user/perfil`)
         } catch (error) {
             res.redirect(`/user/login?mensaje=${encodeURIComponent(error)}&success=false`)
@@ -97,7 +101,7 @@ export class UserController {
         } catch (error) {
             throw new Error('Error al cargar el usuario')
         }
-        
+
         const resultCuenta = CuentaModel.eliminarCuenta(user.dni)
         if (!resultCuenta) throw new Error('Error al eliminar cuenta de usuario')
 

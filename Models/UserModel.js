@@ -102,7 +102,7 @@ export class UserModel {
 
         //Comprobamos la contraseña obtenido en el login
         const isMatch = await bcrypt.compare(user.contraseña, userData.contraseña)
-
+        
         //En caso de que la contraseña esa correcta, devolvemos el dni y el email de usuario
         if (isMatch) {
             return {

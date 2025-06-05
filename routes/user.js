@@ -1,7 +1,7 @@
 import express from 'express'
 import { UserController } from '../Controllers/UserController.js';
 import CuentaController from '../Controllers/CuentaController.js';
-import { isAuthenticated, plantillaMovimiento, plantillaTarjeta } from '../Logic/Utils.js';
+import { isAuthenticated, plantillaMovimiento, plantillaTarjeta, plantillaTarjetaPerfil } from '../Logic/Utils.js';
 import path from 'path';
 import fs from 'fs'
 import { getDirname } from '../Logic/dirname.js';
@@ -28,6 +28,8 @@ UserRouter.get('/Perfil', [isAuthenticated, csrfProtection], async (req, res) =>
     } catch (error) {
         throw new Error('Error al cargar el usuario')
     }
+
+    
 
     if (!user) res.redirect('/login?mensaje=' + encodeURIComponent('Por favor, inicia sesión para acceder.') + '&success=false');
 
@@ -70,7 +72,7 @@ UserRouter.get('/Perfil', [isAuthenticated, csrfProtection], async (req, res) =>
 
     let bloqueTarjeta
     if (tarjetaDebito) {
-        bloqueTarjeta = plantillaTarjeta
+        bloqueTarjeta = plantillaTarjetaPerfil
             .replace(/__NUMERO_TARJETA__/g, tarjetaDebito.numero_tarjeta)
             .replace(/__FECHA_EXPIRACION__/g, tarjetaDebito.fecha_expiracion)
             .replace(/__CVV__/g, tarjetaDebito.cvv)
