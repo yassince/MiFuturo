@@ -72,9 +72,13 @@ class CuentaController {
         //Falta obtener el numeor a ingresar
         let saldo = Number(req.body.ingreso)
 
+        console.log(saldo);
+        //En caso de que supere el limite
+        if(Number(saldo) > 5000){
+            return res.redirect(`/user/Perfil?mensaje=${'El Ingreso no puede exceder los 5.000 &euro'}&success=false`)
+        }
         //Obtenemos la cuenta para actualizar info
         const cuenta = await CuentaModel.getCuenta(dni)
-
 
         if (!cuenta) throw new Error('No se ha encontrado la cuenta')
 
@@ -116,7 +120,7 @@ class CuentaController {
         //Actualizamos el saldo
         let retiro = cuenta.saldo - saldo
 
-        if (retiro < 0) return res.redirect('/User/Perfil?mensaje=' + encodeURIComponent('Su saldo actual no le permite hacer retirar, por favor ingrese dinero.') + '&success=false')
+        if (retiro < 0) return res.redirect('/User/Perfil?mensaje=' + encodeURIComponent('Su saldo actual no le permite hacer el retiro, por favor ingrese dinero.') + '&success=false')
 
         try {
             //Actualizamos los datos

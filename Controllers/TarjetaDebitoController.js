@@ -14,6 +14,8 @@ const TarjetaDebitoController = {
         if (!tarjeta) {
             await TarjetaDebitoModel.crearTarjeta(cuenta.id);
             tarjeta = await TarjetaDebitoModel.obtenerTarjetaPorCuenta(cuenta.id);
+        }else{
+            return res.redirect('/User/Perfil?mensaje=' + encodeURIComponent('Ya tienes una tarjeta asignada.') + '&success=false');    
         }
         res.redirect('/User/Perfil?mensaje=' + encodeURIComponent('Tarjeta creada correctamente.') + '&success=true');
     },

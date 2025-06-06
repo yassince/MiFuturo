@@ -14,7 +14,6 @@
   "dependencies": {
     "@oslojs/encoding": "^1.1.0",
     "bcryptjs": "^3.0.2",
-    "cookie-parser": "^1.4.7",
     "csurf": "^1.11.0",
     "dotenv": "^16.5.0",
     "express": "5.1.0",

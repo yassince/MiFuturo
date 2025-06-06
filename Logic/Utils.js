@@ -264,7 +264,7 @@ export const plantillaTarjetaPerfil = `
 `;
 export const plantillaTarjeta = `
 <h1 class="text-center text-3xl text-blue-800 font-bold mt-4">
-    Productos
+    Tarjeta
 </h1>
 <div class="bg-gradient-to-br from-zinc-800 to-zinc-900 text-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-auto mt-6 border border-gray-700">
   <h2 class="text-lg font-bold mb-4">💳 Tarjeta de Débito</h2>
