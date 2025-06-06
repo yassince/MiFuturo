@@ -7,8 +7,6 @@ const DATABASE = process.env.DB_DATABASE
 const PORT = process.env.DB_PORT
 const PASSWORD = process.env.DB_PASSWORD
 
-console.log(process.env.DB_DATABASE);
-
 export const pool = mysql.createPool({
     host: HOST,
     database: DATABASE,
