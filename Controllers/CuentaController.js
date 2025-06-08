@@ -74,8 +74,13 @@ class CuentaController {
 
         console.log(saldo);
         //En caso de que supere el limite
-        if(Number(saldo) > 5000){
+        if(Number(saldo) > 5000 ){
             return res.redirect(`/user/Perfil?mensaje=${'El Ingreso no puede exceder los 5.000 &euro'}&success=false`)
+        }
+
+        //En caso de que sea meno de 0
+        if(Number(saldo) < 0){
+           return res.redirect(`/user/Perfil?mensaje=${'El ingreso no puede ser menor de 0 &euro'}&success=false`) 
         }
         //Obtenemos la cuenta para actualizar info
         const cuenta = await CuentaModel.getCuenta(dni)
@@ -149,11 +154,13 @@ class CuentaController {
     static async transferencia(req, res) {
         const datos = req.body
 
+        if(datos.cantidad < 0){
+            res.redirect(`/user/Perfil?mensaje=${'La cantidad no es la correccta, por favor introduzca una cantidad valida.'}&success=false`)
+        }
         //Obtenemos la cuenta de destino
         let cuentaDestino
         try {
             cuentaDestino = await CuentaModel.getCuentaByNum(datos.cuenta)
-            console.log(cuentaDestino);
 
         } catch (error) {
             res.redirect(`/user/Perfil?mensaje=${'Número de cuenta no existe'}&success=false`)
@@ -163,7 +170,6 @@ class CuentaController {
         let cuentaOrigen
         try {
             cuentaOrigen = await CuentaModel.getCuenta(req.session.user.dni)
-            console.log(cuentaOrigen);
         } catch (error) {
             res.redirect(`/user/Perfil?mensaje=${'Error a la hora de realizar la transferencia'}&success=false`)
         }
@@ -191,8 +197,6 @@ class CuentaController {
         const usuarioBeneficiario = await UserController.getUserByDni(cuentaDestino.dni);
         const nombre = usuarioBeneficiario.nombre+' '+usuarioBeneficiario.apellidos
 
-        console.log(nombre);
-        
         //Realizamos el movimiento para el los dos usuarios sepan que ha pasado
         TransferenciaController.transferencia({ cuentaOrigen }, { cuentaDestino }, datos.cantidad, nombre)
 

@@ -1,4 +1,5 @@
 import { pool } from '../MySQL/conexion.js';
+import { z } from 'zod';
 
 /*
  * Funcion para comprobar si el usuario esta autenticado
@@ -11,7 +12,6 @@ export function isAuthenticated(req, res, next) {
     }
 }
 
-import { z } from 'zod';
 //funcion para validar el dni, el usuario que quiera registrarse
 const validateDniLetter = (dni) => {
 
@@ -67,7 +67,6 @@ export async function generarNumeroCuenta() {
 export const userRegistrationSchema = z.object({
     dni: z.string()
         .min(9, { message: "El DNI debe tener 9 caracteres." })
-        .max(9, { message: "El DNI debe tener 9 caracteres." })
         .regex(/^[0-9]{8}[TRWAGMYFPDXBNJZSQUVHLCKE]$/i, { message: "El DNI no tiene un formato válido (8 números y 1 letra)." })
         .refine(validateDniLetter, { message: "La letra del DNI no es correcta." }),
 

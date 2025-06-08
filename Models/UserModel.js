@@ -39,7 +39,6 @@ export class UserModel {
      */
     static async register({ user }) {
         if (!user) return new Error('Es necesario los datos del usuario para poder registrarlo correctamente')
-        console.log(user.dni);
 
         const existUser = await this.getUserByDni(user.dni)
 
@@ -56,7 +55,6 @@ export class UserModel {
                 errors[err.path.join('.')] = err.message;
             });
             let errores = Object.values(errors).join(' ')
-            console.log(errores);
 
             throw new Error(errores)
         }
@@ -126,7 +124,7 @@ export class UserModel {
         let validation;
         let pass;
         //En caso de que la contraseña que ha enviado el usuario sea el hash que tenemos en la base de datos
-        if (user.contraseña.length > 30) {
+        if (user.contraseña.length > 50) {
             validation = userUpdateSchema.safeParse(user)
         } else {
             //Si el usuario a enviado una nueva contraseña

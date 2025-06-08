@@ -4,7 +4,7 @@ import { CuentaModel } from '../Models/CuentaModel.js';
 const TarjetaDebitoController = {
     //Crear la tarjeta
     async crearTarjeta(req, res) {
-        const dni = req.session.user?.dni;
+        const dni = req.session.user.dni;
         if (!dni) return res.redirect('/User/login?mensaje=' + encodeURIComponent('Inicia sesión, por favor.') + '&success=false');
 
         const cuenta = await CuentaModel.getCuenta(dni);
