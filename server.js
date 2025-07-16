@@ -72,15 +72,8 @@ app.use((_, res, next) => {
     res.status(404).sendFile(path.join(__dirname, 'dist', 'Error', 'index.html'))
 })
 
-//configuración de certificado
-const options = {
-    key: fs.readFileSync(path.join(__dirname, 'certs/key.pem')),
-    cert: fs.readFileSync(path.join(__dirname, 'certs/cert.pem')),
-}
 
-
-//Inicio del servidor, y el puerto donde escucha
-https.createServer(options, app).listen(PORT,'0.0.0.0', () => {
-    console.log(`Servidor esta funcionando, en https://0.0.0.0:${PORT}`);
-    
-})
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Servidor esta funcionando en http://0.0.0.0:${PORT}`)
+    console.log(`Aplicacion funcionando correctamente`)
+]);
