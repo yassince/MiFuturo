@@ -80,7 +80,7 @@ const options = {
 
 
 //Inicio del servidor, y el puerto donde escucha
-https.createServer(options, app).listen(PORT, () => {
-    console.log(`Servidor esta funcionando, en https://localhost:443`);
+https.createServer(options, app).listen(PORT,'0.0.0.0', () => {
+    console.log(`Servidor esta funcionando, en https://0.0.0.0:${PORT}`);
     
 })
