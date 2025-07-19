@@ -9,33 +9,31 @@ export class CuentaModel {
     static async crearCuenta({ cuenta }) {
         const sql = `
       INSERT INTO cuentas (dni, numero_cuenta, saldo, fecha_apertura)
-      VALUES (?, ?, ?, CURDATE())
+      VALUES ($1, $2, $3, CURRENT_DATE) RETURNING cuenta_id
     `;
 
         try {
-            const [rows] = await pool.query(sql, [cuenta.dni, cuenta.numero_cuenta, cuenta.saldo]);
-            
-            return rows.insertId
+            const result = await pool.query(sql, [cuenta.dni, cuenta.numero_cuenta, cuenta.saldo]);
+            return result.rows[0].cuenta_id
         } catch (error) {
             console.log(error);
-            
             throw new Error('No se ha podido crear la cuenta', error);
         }
     }
 
     //Obtener cuenta por dni del usuario
     static async getCuenta(dni) {
-        const sql = 'SELECT * FROM cuentas WHERE dni = ?;'
+        const sql = 'SELECT * FROM cuentas WHERE dni = $1;'
 
         try {
-            const [rows] = await pool.query(sql, [dni]);
+            const result = await pool.query(sql, [dni]);
             
             return {
-                id: rows[0].cuenta_id,
-                dni: rows[0].dni,
-                numero_cuenta: rows[0].numero_cuenta,
-                saldo: rows[0].saldo,
-                fecha_apertura: rows[0].fecha_apertura
+                id: result.rows[0].cuenta_id,
+                dni: result.rows[0].dni,
+                numero_cuenta: result.rows[0].numero_cuenta,
+                saldo: result.rows[0].saldo,
+                fecha_apertura: result.rows[0].fecha_apertura
             }
 
         } catch (error) {
@@ -45,17 +43,17 @@ export class CuentaModel {
 
     //Obtener cuenta por numero de cuenta
     static async getCuentaByNum(num){
-        const sql = 'SELECT * FROM cuentas WHERE numero_cuenta = ?'
+        const sql = 'SELECT * FROM cuentas WHERE numero_cuenta = $1'
         
         try {
-            const [rows] = await pool.query(sql, [num]);
+            const result = await pool.query(sql, [num]);
             
             return {
-                id: rows[0].cuenta_id,
-                dni: rows[0].dni,
-                numero_cuenta: rows[0].numero_cuenta,
-                saldo: rows[0].saldo,
-                fecha_apertura: rows[0].fecha_apertura
+                id: result.rows[0].cuenta_id,
+                dni: result.rows[0].dni,
+                numero_cuenta: result.rows[0].numero_cuenta,
+                saldo: result.rows[0].saldo,
+                fecha_apertura: result.rows[0].fecha_apertura
             }
 
         } catch (error) {
@@ -66,12 +64,13 @@ export class CuentaModel {
 
     //Eliminar cuenta del usuario con dni
     static async eliminarCuenta(dni) {
-        const sql = 'DELETE FROM cuentas WHERE dni = ?;'
+        const sql = 'DELETE FROM cuentas WHERE dni = $1;'
         
         try {
-            const [rows] = await pool.query(sql, [dni]);
+            const result = await pool.query(sql, [dni]);
+            console.log(result.rowCount);
             
-            if (rows.affectedRows > 0) {
+            if (result.rowCount > 0) {
                 return true
             } else {
                 return false
@@ -83,11 +82,13 @@ export class CuentaModel {
 
     //Actualizar el saldo del la cuenta
     static async updateCuenta(saldo, dni) {
-        const sql = 'UPDATE cuentas set saldo = ? WHERE dni = ?'
+        const sql = 'UPDATE cuentas set saldo = $1 WHERE dni = $2 RETURNING saldo'
         
         try {
-            const [rows] = await pool.execute(sql, [saldo, dni])
-            return
+            const result = await pool.query(sql, [saldo, dni])
+            console.log(result.rows);
+            if(result.rows[0].saldo == saldo) return
+            else return new Error('Error al actualizar el saldo de usuario')
         } catch (error) {
             throw new Error('Error al actualizar los datos de la cuenta del usuario')
         }
