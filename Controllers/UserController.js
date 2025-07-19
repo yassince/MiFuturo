@@ -22,9 +22,7 @@ export class UserController {
     }
 
     static async showUpdateFrom(req, res) {
-
         const user = await UserModel.getUserByDni(req.session.user.dni);
-        console.log(user);
 
         if (!user) throw new Error('No se ha podido encontrar el usuario')
 
@@ -73,7 +71,7 @@ export class UserController {
         try {
             const userData = await UserModel.login({ user })
             req.session.user = userData; /* Guardamos el login del usuario */
-
+            
             if (req.session.user.email === 'admin@mifuturo.com') {
                 return res.redirect('/Admin/');
             }
@@ -85,10 +83,9 @@ export class UserController {
 
     static async updateUser(req, res) {
         const user = req.body
-
         try {
             const update = await UserModel.update({ user })
-            res.redirect(`/user/Update?mensaje=${encodeURIComponent('Usuario actualizado correctamente')}&success=true`)
+            res.redirect(`/user/Perfil?mensaje=${encodeURIComponent('Usuario actualizado correctamente')}&success=true`)
         } catch (error) {
             res.redirect(`/user/Update?mensaje=${encodeURIComponent(error)}&success=false`)
         }

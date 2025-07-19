@@ -13,7 +13,7 @@ ProductoRouter.get('/Productos', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'dist', 'Productos', 'index.html'))
 })
 
-ProductoRouter.post('/Tarjeta', TarjetaDebitoController.crearTarjeta)
+ProductoRouter.post('/Tarjeta', isAuthenticated, TarjetaDebitoController.crearTarjeta)
 ProductoRouter.post('/Tarjeta/Bloquear/:id',isAuthenticated, TarjetaDebitoController.bloquearTarjeta)
 ProductoRouter.post('/Tarjeta/Activar/:id', isAuthenticated, TarjetaDebitoController.activarTarjeta)
 

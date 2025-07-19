@@ -5,7 +5,7 @@ import { z } from 'zod';
  * Funcion para comprobar si el usuario esta autenticado
  */
 export function isAuthenticated(req, res, next) {
-    if (req.session && req.session.user) {
+    if (req.session?.user) {
         next();
     } else {
         res.redirect('/user/login?mensaje=' + encodeURIComponent('Por favor, inicia sesión para acceder.') + '&success=false');
@@ -47,10 +47,11 @@ export async function generarNumeroCuenta() {
 
         try {
             const result = await pool.query(
-                'SELECT numero_cuenta FROM cuentas WHERE numero_cuenta = ?',
+                'SELECT numero_cuenta FROM cuentas WHERE numero_cuenta = $1',
                 [numeroCompleto]
             );
-
+            console.log(result);
+            
             if (result.rows.length === 0) {
                 return numeroCompleto;
             }

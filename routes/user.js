@@ -28,9 +28,7 @@ UserRouter.get('/Perfil', [isAuthenticated, csrfProtection], async (req, res) =>
     } catch (error) {
         throw new Error('Error al cargar el usuario')
     }
-
     
-
     if (!user) res.redirect('/login?mensaje=' + encodeURIComponent('Por favor, inicia sesión para acceder.') + '&success=false');
 
     //Fromateando las fechas del usuario

@@ -72,7 +72,6 @@ class CuentaController {
         //Falta obtener el numeor a ingresar
         let saldo = Number(req.body.ingreso)
 
-        console.log(saldo);
         //En caso de que supere el limite
         if(Number(saldo) > 5000 ){
             return res.redirect(`/user/Perfil?mensaje=${'El Ingreso no puede exceder los 5.000 &euro'}&success=false`)
