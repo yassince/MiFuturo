@@ -46,12 +46,12 @@ export async function generarNumeroCuenta() {
         const numeroCompleto = `${banco}${sucursal}${dc}${cuenta}`;
 
         try {
-            const [result] = await pool.query(
+            const result = await pool.query(
                 'SELECT numero_cuenta FROM cuentas WHERE numero_cuenta = ?',
                 [numeroCompleto]
             );
 
-            if (result.length === 0) {
+            if (result.rows.length === 0) {
                 return numeroCompleto;
             }
 
