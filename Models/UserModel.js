@@ -14,16 +14,15 @@ export class UserModel {
             throw new Error('DNI es requerido para obtener la información del usuario.');
         }
         try {
-            const [rows, fields] = await pool.execute(
-                'SELECT * FROM Clientes WHERE DNI = ?',
+            const result = await pool.query(
+                'SELECT * FROM clientes WHERE DNI = $1',
                 [dni]
             );
 
-            //en caso de que obtengamos algo lo devovemos
-            if (rows.length > 0) {
-                return rows[0];
+            //if users exist, we give back it
+            if (result.rows.length > 0) {
+                return result.rows[0];
             } else {
-                //En caso contrario retornamos null
                 return null;
             }
 
@@ -68,10 +67,10 @@ export class UserModel {
         const salt = await bcrypt.genSalt(10)
         const contraseña = await bcrypt.hash(user.contraseña, salt)
 
-        let row, fields;
+        
         try {
-            [row, fields] = await pool.execute(
-                'INSERT INTO clientes (nombre,apellidos,fecha_nacimiento,direccion,telefono,contraseña,email,dni,fecha_alta) VALUES (?,?,?,?,?,?,?,?,?)',
+            await pool.query(
+                'INSERT INTO clientes (nombre,apellidos,fecha_nacimiento,direccion,telefono,contraseña,email,dni,fecha_alta) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
                 [user.nombre, user.apellidos, user.fecha_nacimiento, user.direccion, user.telefono, contraseña, user.email, user.dni, fecha_alta]
             )
         } catch (error) {
