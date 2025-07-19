@@ -2,8 +2,6 @@ import express from 'express'
 import path from 'path'
 import session from 'express-session';
 import { fileURLToPath } from 'url';
-import fs from 'fs'
-import https from 'https'
 
 //Importamos los routers
 import ProductoRouter from './routes/Productos.js';
@@ -28,7 +26,7 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: true,
+        secure: false,
         httpOnly: true,
         maxAge: 1000 * 60 * 60 * 24
     }
@@ -73,7 +71,10 @@ app.use((_, res, next) => {
 })
 
 
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Servidor esta funcionando en http://0.0.0.0:${PORT}`)
+app.listen(PORT, 'localhost', () => {
+    console.log(`Servidor esta funcionando en http://localhost:${PORT}`)
     console.log(`Aplicacion funcionando correctamente`)
 });
+
+
+/* Probar el funcionamiento del proyecto, antes de actualizar el repo y subirlo a onreder */
