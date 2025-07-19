@@ -1,4 +1,4 @@
-import mysql from 'mysql2/promise'
+import { Pool } from 'pg'
 import 'dotenv/config'
 
 const HOST = process.env.DB_HOST
@@ -7,7 +7,7 @@ const DATABASE = process.env.DB_DATABASE
 const PORT = process.env.DB_PORT
 const PASSWORD = process.env.DB_PASSWORD
 
-export const pool = mysql.createPool({
+export const pool = new Pool({
     host: HOST,
     database: DATABASE,
     user: USER,
