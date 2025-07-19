@@ -10,20 +10,22 @@ const TarjetaDebitoModel = {
 
             const sql = `
             INSERT INTO tarjetas_debito (numero_tarjeta, fecha_expiracion, cvv, activa, cuenta_id)
-            VALUES (?, ?, ?, 1, ?)`;
+            VALUES ($1, $2, $3, false, $4) RETURNING id`;
 
-            const [result] = await pool.execute(sql, [numero_tarjeta, fecha_expiracion, cvv, cuenta_id]);
-            return result.insertId;
+            const result = await pool.query(sql, [numero_tarjeta, fecha_expiracion, cvv, cuenta_id]);
+            return result.rows[0].id;
         } catch (error) {
+            console.log(error);
+            
             throw new Error("No se pudo crear la tarjeta.");
         }
     },
 
     async obtenerTarjetaPorCuenta(cuenta_id) {
         try {
-            const sql = 'SELECT * FROM tarjetas_debito WHERE cuenta_id = ?';
-            const [rows] = await pool.execute(sql, [cuenta_id]);
-            return rows[0];
+            const sql = 'SELECT * FROM tarjetas_debito WHERE cuenta_id = $1';
+            const result = await pool.query(sql, [cuenta_id]);
+            return result.rows[0];
         } catch (error) {
             throw new Error("No se pudo obtener la tarjeta.");
         }
@@ -31,8 +33,8 @@ const TarjetaDebitoModel = {
 
     async bloquearTarjeta(id) {
         try {
-            const sql = 'UPDATE tarjetas_debito SET activa = 0 WHERE id = ?';
-            await pool.execute(sql, [id]);
+            const sql = 'UPDATE tarjetas_debito SET activa = false WHERE id = $1';
+            await pool.query(sql, [id]);
         } catch (error) {
             throw new Error("No se pudo bloquear la tarjeta.");
         }
@@ -40,8 +42,8 @@ const TarjetaDebitoModel = {
 
     async activarTarjeta(id) {
         try {
-            const sql = 'UPDATE tarjetas_debito SET activa = 1 WHERE id = ?';
-            await pool.execute(sql, [id]);
+            const sql = 'UPDATE tarjetas_debito SET activa = true WHERE id = $1';
+            await pool.query(sql, [id]);
         } catch (error) {
             throw new Error("No se pudo activar la tarjeta.");
         }
