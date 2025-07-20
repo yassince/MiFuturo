@@ -1,7 +1,14 @@
 import { pool } from '../MySQL/conexion.js';
 
 export class TransferenciaModel {
-    //Metodo para la apertura de la cuenta
+    /**
+     * Opening movement
+     * @param {*} origen 
+     * @param {*} tipo 
+     * @param {*} monto 
+     * @param {*} fecha_hora 
+     * @param {*} descripcion 
+     */
     static async apreturaCuenta(origen, tipo, monto, fecha_hora, descripcion) {
         const sql = 'INSERT INTO transacciones (cuenta_origen_id, tipo_transaccion, monto, fecha_hora ,descripcion) VALUES($1, $2, $3, $4, $5);'
 
@@ -19,9 +26,14 @@ export class TransferenciaModel {
         }
     }
 
-    //Metodo para que el usuario realice un retiro
+    /**
+     * Ingress movement
+     * @param {*} destino 
+     * @param {*} saldo 
+     * @param {*} fecha_hora 
+     * @param {*} descripcion 
+     */
     static async ingreso(destino, saldo, fecha_hora, descripcion) {
-
         const sql = 'INSERT INTO transacciones (cuenta_destino_id, tipo_transaccion, monto, fecha_hora ,descripcion) VALUES ($1, $2, $3, $4, $5);'
 
         try {
@@ -32,13 +44,18 @@ export class TransferenciaModel {
                 fecha_hora,
                 descripcion
             ])
-
         } catch (error) {
             throw new Error('Error al insertar transacción: ', error)
         }
     }
 
-    //Metodo para que usuario haga un retiro
+    /**
+     * Withdraw movement
+     * @param {*} origen 
+     * @param {*} monto 
+     * @param {*} fecha_hora 
+     * @param {*} descripcion 
+     */
     static async retiro(origen, monto, fecha_hora, descripcion) {
         const sql = 'INSERT INTO transacciones (cuenta_origen_id,tipo_transaccion,monto,fecha_hora,descripcion) VALUES($1, $2, $3, $4, $5);'
 
@@ -50,13 +67,20 @@ export class TransferenciaModel {
                 fecha_hora,
                 descripcion
             ])
-
         } catch (error) {
             throw new Error('Error al insertar transacción: ', error)
         }
     }
 
-    //Metodo para la transferencia al completo
+    /**
+     * Function for transfer between accounts
+     * @param {*} origen 
+     * @param {*} destino 
+     * @param {*} tipo 
+     * @param {*} monto 
+     * @param {*} fecha_hora 
+     * @param {*} descripcion 
+     */
     static async transferencia(origen, destino, tipo, monto, fecha_hora, descripcion) {
         const sql = 'INSERT INTO transacciones (cuenta_origen_id, cuenta_destino_id, tipo_transaccion, monto, fecha_hora ,descripcion) VALUES($1, $2, $3, $4, $5, $6);'
 
@@ -75,7 +99,11 @@ export class TransferenciaModel {
         }
     }
 
-    //metodo para obtener todos los movimientos en los que esta involucrado el usuario
+    /**
+     * Get all movement of specific user
+     * @param {*} id 
+     * @returns 
+     */
     static async getmovimientos(id) {
         const sql = "SELECT *, CASE WHEN cuenta_origen_id = $1 THEN 'salida' WHEN cuenta_destino_id = $2 THEN 'entrada' ELSE 'desconocido' END AS direccion FROM transacciones WHERE cuenta_origen_id = $3 OR cuenta_destino_id = $4 ORDER BY fecha_hora DESC;"
 

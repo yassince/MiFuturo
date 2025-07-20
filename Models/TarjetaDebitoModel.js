@@ -2,6 +2,11 @@ import { pool } from '../MySQL/conexion.js';
 import { generarNumeroTarjeta, generarCVV, obtenerFechaExpiracion } from '../Logic/TarjetaUtils.js';
 
 const TarjetaDebitoModel = {
+    /**
+     * Create card for user
+     * @param {*} cuenta_id 
+     * @returns 
+     */
     async crearTarjeta(cuenta_id) {
         try {
             const numero_tarjeta = generarNumeroTarjeta();
@@ -21,6 +26,11 @@ const TarjetaDebitoModel = {
         }
     },
 
+    /**
+     * Get card with his account id
+     * @param {*} cuenta_id 
+     * @returns 
+     */
     async obtenerTarjetaPorCuenta(cuenta_id) {
         try {
             const sql = 'SELECT * FROM tarjetas_debito WHERE cuenta_id = $1';
@@ -31,6 +41,10 @@ const TarjetaDebitoModel = {
         }
     },
 
+    /**
+     * Lock a card
+     * @param {*} id 
+     */
     async bloquearTarjeta(id) {
         try {
             const sql = 'UPDATE tarjetas_debito SET activa = false WHERE id = $1';
@@ -40,6 +54,10 @@ const TarjetaDebitoModel = {
         }
     },
 
+    /**
+     * Activate a card
+     * @param {*} id 
+     */
     async activarTarjeta(id) {
         try {
             const sql = 'UPDATE tarjetas_debito SET activa = true WHERE id = $1';

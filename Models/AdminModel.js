@@ -1,28 +1,37 @@
 import { pool } from "../MySQL/conexion.js";
 
-
 export const AdminModel = {
-    //Obtener todos los usuarios
+
+  /**
+   * Get All users
+   * @returns 
+   */
   async obtenerTodosLosUsuarios() {
     try {
-      const [rows] = await pool.query('SELECT * FROM clientes');
-      return rows;
+      const result = await pool.query('SELECT * FROM clientes');
+      return result.rows;
     } catch (error) {
       throw new Error('Error al obtener los usuarios');
     }
   },
 
-  //Obtener todas la cuentas
+  /**
+   * Get all account
+   * @returns 
+   */
   async obtenerTodasLasCuentas() {
     try {
-      const [rows] = await pool.query('SELECT * FROM cuentas');
-      return rows;
+      const result = await pool.query('SELECT * FROM cuentas');
+      return result.rows;
     } catch (error) {
       throw new Error('Error al obtener las cuentas');
     }
   },
 
-  //Obtener todas las tarjetas
+  /**
+   * Get all cards
+   * @returns 
+   */
   async obtenerTodasLasTarjetas() {
     try {
       const [rows] = await pool.query('SELECT * FROM tarjetas_debito');
@@ -31,4 +40,4 @@ export const AdminModel = {
       throw new Error('Error al obtener las tarjetas');
     }
   }
-};
+}
