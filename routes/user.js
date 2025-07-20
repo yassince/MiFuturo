@@ -7,20 +7,20 @@ import fs from 'fs'
 import { getDirname } from '../Logic/dirname.js';
 import { TransferenciaController } from '../Controllers/TransferenciaController.js';
 
-/* protección contra actaque de formularios */
+//Protection for form's attack
 import csrfProtection from '../Logic/csrf.js';
 import TarjetaDebitoController from '../Controllers/TarjetaDebitoController.js';
 const __dirname = getDirname(import.meta.url)
 
 const UserRouter = express.Router();
 
-/* Rutas para el usuario */
+//Routes for user to Log in or Sing up
 UserRouter.get('/Registro', UserController.showRegisterFrom)/* mostrar la vista */
 UserRouter.post('/Registro', UserController.registerUser)/* para registrar el usuario */
 UserRouter.get('/Login', UserController.showLoginFrom)/* mostrar la vista */
 UserRouter.post('/Login', UserController.loginUser)/* para login del usuario */
 
-/* Mostrar perfil del usuario */
+//Route to show dashboard to user
 UserRouter.get('/Perfil', [isAuthenticated, csrfProtection], async (req, res) => {
     let user;
     try {
@@ -107,7 +107,7 @@ UserRouter.get('/Perfil', [isAuthenticated, csrfProtection], async (req, res) =>
     res.send(template)
 })
 
-/* Cerrar sesión del usuario */
+//Log out
 UserRouter.get('/Logout', isAuthenticated, (req, res) => {
     if (req.session) {
         req.session.destroy(err => {
@@ -124,10 +124,10 @@ UserRouter.get('/Logout', isAuthenticated, (req, res) => {
     }
 })
 
-/* Borrar cuenta de usuario */
+//Delete user
 UserRouter.post('/Remove', isAuthenticated, UserController.remove)
 
-/* Actualizar perfil del usuario logueado */
+//Update user info
 UserRouter.get('/Update', [isAuthenticated, csrfProtection], UserController.showUpdateFrom)
 UserRouter.post('/Update', [isAuthenticated, csrfProtection], UserController.updateUser)
 
