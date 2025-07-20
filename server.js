@@ -72,7 +72,7 @@ app.use((_, res, next) => {
 })
 
 //Listen port of website
-app.listen(PORT, 'localhost', () => {
-    console.log(`Servidor esta funcionando en http://localhost:${PORT}`)
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Servidor esta funcionando en http://0.0.0.0:${PORT}`)
     console.log(`Aplicacion funcionando correctamente`)
 });
