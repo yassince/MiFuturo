@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs'
 
 export class UserModel {
     /**
-     * 
+     * Get specific user
      * @param {String} dni primary key of each user
      * @returns the user object
      */
@@ -33,21 +33,19 @@ export class UserModel {
     }
 
     /**
-     * 
+     * Register user
      * @param {object} object user for registration in database 
      */
     static async register({ user }) {
         if (!user) return new Error('Es necesario los datos del usuario para poder registrarlo correctamente')
 
         const existUser = await this.getUserByDni(user.dni)
-
-        //En caso de que el usuario exista
         if (existUser) throw new Error('El usuario ya existe')
 
-        //Validamos la información obtenida del registro
+        //Validate user info
         const validation = userRegistrationSchema.safeParse(user)
 
-        //En caso de que se produzca un error a la hora de la validación de datos
+        //if some info of user is not allowed
         if (!validation.success) {
             const errors = {};
             validation.error.errors.forEach(err => {
@@ -59,14 +57,13 @@ export class UserModel {
         }
 
 
-        /* fecha de alta */
+        //Formate Sing up date
         const date = new Date();
         const fecha_alta = date.toISOString().split('T')[0];
 
-        /* contraseña encriptada */
+        //Encripted pass
         const salt = await bcrypt.genSalt(10)
         const contraseña = await bcrypt.hash(user.contraseña, salt)
-
 
         try {
             await pool.query(
@@ -79,7 +76,7 @@ export class UserModel {
     }
 
     /**
-     * 
+     * Login user
      * @param {object} user obtject for login 
      * @returns 
      */
@@ -88,30 +85,26 @@ export class UserModel {
 
         let userData
         try {
-            //Obtenemos el usuario que tenemos en la base de datos
             userData = await this.getUserByDni(user.dni);
         } catch (error) {
             throw error
         }
 
-        //En caso de que no exista el usuario obtenido
         if (!userData) throw new Error("Usuario no existe");
-        //Comprobamos la contraseña obtenido en el login
-        const isMatch = await bcrypt.compare(user.contraseña, userData.contrasena)
+        const isMatch = await bcrypt.compare(user.contraseña, userData.contrasena)//Compare the password
 
-        //En caso de que la contraseña esa correcta, devolvemos el dni y el email de usuario
+        //If the pass match, we got back the user's DNI and user's email.
         if (isMatch) {
             return {
                 dni: userData.dni,
                 email: userData.email
             }
         } else {
-            //En caso de que la contraseña no sea correcta
             throw new Error('Contraseña Incorrecta')
         }
     }
     /**
-     * 
+     * Update user
      * @param {object} user for update his info 
      * @returns true or false depending of affected rows on database
      */
@@ -120,17 +113,17 @@ export class UserModel {
 
         let validation;
         let pass;
-        //En caso de que la contraseña que ha enviado el usuario sea el hash que tenemos en la base de datos
+        //If the user not change the hash pass of the update form
         if (user.contraseña.length > 50) {
             validation = userUpdateSchema.safeParse(user)
         } else {
-            //Si el usuario a enviado una nueva contraseña
+            //if user want change the password
             const salt = await bcrypt.genSalt(10)
             pass = await bcrypt.hash(user.contraseña, salt)
             validation = userRegistrationSchema.safeParse(user)
         }
 
-        //Comprobación de la validación de datos en Zod
+        //Validate user info with zod
         if (!validation.success) {
             const errors = {};
             validation.error.errors.forEach(err => {
@@ -140,14 +133,11 @@ export class UserModel {
             throw new Error(errores)
         }
 
-        //Obtenemos el usuario a actualizar
+
         const userData = this.getUserByDni(user.dni)
+        if (!userData) throw new Error(`Usuario con DNI ${user.dni} no encontrado.`);
 
-        if (!userData) {
-            throw new Error(`Usuario con DNI ${user.dni} no encontrado.`);
-        }
-
-        //Actualizamos la info del usuario
+        //Update the user info
         const result = await pool.query(
             'UPDATE Clientes SET nombre = $1, apellidos = $2, fecha_nacimiento = $3, direccion = $4, telefono = $5, email = $6, contrasena=$7 WHERE dni = $8',
             [
@@ -162,7 +152,6 @@ export class UserModel {
             ]
         );
 
-        //En caso de que la actualización se haya hecho
         if (result.rowCount > 1) {
             console.log('Usuario actualizado');
             true
@@ -172,7 +161,7 @@ export class UserModel {
     }
 
     /**
-     * 
+     * Remove the user
      * @param {String} dni of user for remove he in the database 
      * @returns true or false depending of affected rows on database
      */
