@@ -54,8 +54,6 @@ export async function generarNumeroCuenta() {
                 'SELECT numero_cuenta FROM cuentas WHERE numero_cuenta = $1',
                 [numeroCompleto]
             );
-            console.log(result);
-            
             if (result.rows.length === 0) {
                 return numeroCompleto;
             }

@@ -34,8 +34,8 @@ export const AdminModel = {
    */
   async obtenerTodasLasTarjetas() {
     try {
-      const [rows] = await pool.query('SELECT * FROM tarjetas_debito');
-      return rows;
+      const result = await pool.query('SELECT * FROM tarjetas_debito');
+      return result.rows;
     } catch (error) {
       throw new Error('Error al obtener las tarjetas');
     }

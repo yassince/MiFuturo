@@ -79,10 +79,10 @@ export class UserController {
         if (!user.dni) return res.redirect(`/registro?mensaje=${encodeURIComponent('Error en el registro, por favor introduzca sus datos')}&success=false`)
 
         try {
-            //Register User 
             await UserModel.register({ user })
-            //Register Acount of user
-            await CuentaController.createCuenta({ user })
+
+            //If the register user is admin, we dont need to create a account for that user.
+            if(user.email != 'admin@mifuturo.com') await CuentaController.createCuenta({ user }) //Create user account
 
             res.redirect(`/user/Login?mensaje=${encodeURIComponent('Usuario registrado correctamene. Inicia sesión')}&success=true`)
         } catch (error) {

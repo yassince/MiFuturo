@@ -34,7 +34,7 @@ export const AdminController = {
    * @param {*} req 
    * @param {*} res 
    */
-  async obtenerUsuarios(req, res) {
+  async obtenerUsuarios(_, res) {
     try {
       const usuarios = await AdminModel.obtenerTodosLosUsuarios();
 
@@ -56,7 +56,7 @@ export const AdminController = {
       res.send(finalHtml)
 
     } catch (error) {
-      res.status(404)
+      res.status(404).send('Error al obtener los datos el los usuarios');
     }
   },
 
@@ -65,7 +65,7 @@ export const AdminController = {
    * @param {*} req 
    * @param {*} res 
    */
-  async obtenerCuentas(req, res) {
+  async obtenerCuentas(_, res) {
     try {
       const cuentas = await AdminModel.obtenerTodasLasCuentas();
 
@@ -90,7 +90,7 @@ export const AdminController = {
    * @param {*} req 
    * @param {*} res 
    */
-  async obtenerTarjetas(req, res) {
+  async obtenerTarjetas(_, res) {
     try {
       const tarjetas = await AdminModel.obtenerTodasLasTarjetas();
 

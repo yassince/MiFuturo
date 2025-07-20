@@ -79,7 +79,6 @@ export class CuentaModel {
 
         try {
             const result = await pool.query(sql, [dni]);
-            console.log(result.rowCount);
 
             if (result.rowCount > 0) {
                 return true
@@ -102,7 +101,6 @@ export class CuentaModel {
 
         try {
             const result = await pool.query(sql, [saldo, dni])
-            console.log(result.rows);
             if (result.rows[0].saldo == saldo) return
             else return new Error('Error al actualizar el saldo de usuario')
         } catch (error) {
