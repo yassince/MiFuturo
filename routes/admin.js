@@ -4,13 +4,13 @@ import { isAdmin } from '../Logic/Utils.js';
 
 const adminRouter = Router();
 
-// Ruta para obtener todos los usuarios
+//Route to get all users
 adminRouter.get('/', isAdmin , AdminController.obtenerUsuarios);
 
-// Ruta para obtener todas las cuentas
+//Route to get all accounts
 adminRouter.get('/Cuentas', isAdmin ,AdminController.obtenerCuentas);
 
-// Ruta para obtener todas las tarjetas
+//Route to get all cards
 adminRouter.get('/Tarjetas', isAdmin ,AdminController.obtenerTarjetas);
 
 export default adminRouter;

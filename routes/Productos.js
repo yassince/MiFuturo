@@ -4,15 +4,13 @@ import { isAuthenticated } from '../Logic/Utils.js';
 import { getDirname } from '../Logic/dirname.js';
 import TarjetaDebitoController from '../Controllers/TarjetaDebitoController.js';
 
-/* protección contra actaque de formularios */
 const __dirname = getDirname(import.meta.url)
-
 const ProductoRouter = express.Router();
 
-ProductoRouter.get('/Productos', (req, res) => {
+//Routes to get products and create, lock and activate cards
+ProductoRouter.get('/Productos', (_, res) => {
     res.sendFile(path.join(__dirname, '..', 'dist', 'Productos', 'index.html'))
 })
-
 ProductoRouter.post('/Tarjeta', isAuthenticated, TarjetaDebitoController.crearTarjeta)
 ProductoRouter.post('/Tarjeta/Bloquear/:id',isAuthenticated, TarjetaDebitoController.bloquearTarjeta)
 ProductoRouter.post('/Tarjeta/Activar/:id', isAuthenticated, TarjetaDebitoController.activarTarjeta)
