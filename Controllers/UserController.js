@@ -9,28 +9,49 @@ const __dirname = getDirname(import.meta.url)
 
 export class UserController {
 
-    static showRegisterFrom(req, res) {
+    /**
+     * Show Form to user for registation
+     * @param {*} req 
+     * @param {*} res 
+     */
+    static showRegisterFrom(_, res) {
         res.sendFile(path.join(__dirname, '..', 'dist', 'Registro', 'index.html'))
     }
 
-    static showLoginFrom(req, res) {
+    /**
+     * Show Login form to user
+     * @param {*} req 
+     * @param {*} res 
+     */
+    static showLoginFrom(_, res) {
         res.sendFile(path.join(__dirname, '..', 'dist', 'Login', 'index.html'))
     }
 
+    /**
+     * Get specific user
+     * @param {*} dni 
+     * @returns 
+     */
     static getUserByDni(dni) {
         return UserModel.getUserByDni(dni)
     }
 
+    /**
+     * Show Form to user for update user's information 
+     * @param {*} req 
+     * @param {*} res 
+     */
     static async showUpdateFrom(req, res) {
         const user = await UserModel.getUserByDni(req.session.user.dni);
 
         if (!user) throw new Error('No se ha podido encontrar el usuario')
 
-
+        //Format user's date to show
         const fechaNacimiento = new Date(user.fecha_nacimiento).toISOString().split('T')[0];
 
+        //Update form path
         const htmlPath = path.join(__dirname, '..', 'dist', 'Update', 'index.html');
-        const csrfToken = req.csrfToken();
+        const csrfToken = req.csrfToken();//Create a csrf token for form
         const template = fs.readFileSync(htmlPath, 'utf-8')
             .replace('__CSRF__', csrfToken)
             .replace(/__DNI__/g, user.dni)
@@ -46,23 +67,35 @@ export class UserController {
         res.send(template)
     }
 
+    /**
+     * Fuction for register a user
+     * @param {*} req 
+     * @param {*} res 
+     * @returns 
+     */
     static async registerUser(req, res) {
         const user = req.body
 
         if (!user.dni) return res.redirect(`/registro?mensaje=${encodeURIComponent('Error en el registro, por favor introduzca sus datos')}&success=false`)
 
         try {
-            //Registramos el usuario
+            //Register User 
             await UserModel.register({ user })
-            //Registramos la cuenta
+            //Register Acount of user
             await CuentaController.createCuenta({ user })
 
-            res.redirect(`/user/Registro?mensaje=${encodeURIComponent('Usuario registrado correctamene')}&success=true`)
+            res.redirect(`/user/Login?mensaje=${encodeURIComponent('Usuario registrado correctamene. Inicia sesión')}&success=true`)
         } catch (error) {
-            res.redirect(`/user/Registro?mensaje=${encodeURIComponent(error)}&success=false`)
+            res.redirect(`/user/Registro?mensaje=${encodeURIComponent(error)}&success=false`)//Send error feedback for user
         }
     }
 
+    /**
+     * Function for login a user
+     * @param {*} req 
+     * @param {*} res 
+     * @returns 
+     */
     static async loginUser(req, res) {
         const user = req.body
 
@@ -70,27 +103,39 @@ export class UserController {
 
         try {
             const userData = await UserModel.login({ user })
-            req.session.user = userData; /* Guardamos el login del usuario */
+            req.session.user = userData; /* Save the user login */
             
+            //if the user is admin redirect to dasboard
             if (req.session.user.email === 'admin@mifuturo.com') {
                 return res.redirect('/Admin/');
             }
+            //if not redirect to profile
             res.redirect(`/user/perfil`)
         } catch (error) {
             res.redirect(`/user/login?mensaje=${encodeURIComponent(error)}&success=false`)
         }
     }
 
+    /**
+     * Function for user update
+     * @param {*} req 
+     * @param {*} res 
+     */
     static async updateUser(req, res) {
         const user = req.body
         try {
-            const update = await UserModel.update({ user })
+            await UserModel.update({ user })
             res.redirect(`/user/Perfil?mensaje=${encodeURIComponent('Usuario actualizado correctamente')}&success=true`)
         } catch (error) {
             res.redirect(`/user/Update?mensaje=${encodeURIComponent(error)}&success=false`)
         }
     }
 
+    /**
+     * Function for user remove
+     * @param {*} req 
+     * @param {*} res 
+     */
     static async remove(req, res) {
         let user;
         try {
@@ -106,7 +151,7 @@ export class UserController {
         if (!resultUser) throw new Error('No se ha encontrado el usuario a eliminar')
 
 
-
+        //After remove the user and his acount and card, remove the session
         if (req.session) {
             req.session.destroy(err => {
                 if (err) {
