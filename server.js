@@ -3,7 +3,7 @@ import path from 'path'
 import session from 'express-session';
 import { fileURLToPath } from 'url';
 
-//Importamos los routers
+//Import the routers
 import ProductoRouter from './routes/Productos.js';
 import UserRouter from './routes/user.js';
 import cuentaRouter from './routes/cuenta.js';
@@ -15,12 +15,12 @@ const PORT = process.env.PORT ?? 443;
 const __filename = fileURLToPath(new URL(import.meta.url));
 const __dirname = path.dirname(__filename)
 
-//Midelware para parsear los datos
+//Midelware for parse info of request
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
 
 
-//Configuración de session
+//Session configuration
 app.use(session({
     secret: process.env.SESSION_PASS,
     resave: false,
@@ -32,22 +32,23 @@ app.use(session({
     }
 }));
 
-//Ubicación del la carpeta dist
+//Dist folder ubication
 const distPath = path.join(__dirname, 'dist');
 
 /* Carpetas necesarias para el funcionamiento del FrontEnd */
+//Folders for proper functioning 
 app.use('/_astro', express.static(path.join(distPath, '_astro')));
 app.use('/img', express.static(path.join(distPath, 'img')));
 app.use('/Fonts', express.static(path.join(distPath, 'Fonts')));
 app.use('/Assets', express.static(path.join(distPath, 'assets')));
 
-//Rutas principales
+//Main routes
 app.use('/User', UserRouter)
 app.use('/Cuenta', cuentaRouter)
 app.use('/Productos', ProductoRouter)
 app.use('/admin', adminRouter)
 
-//Rutas estaticas
+//Static Routes
 app.get('/', (_, res) => {
     res.sendFile(path.join(distPath, 'index.html'))
 })
@@ -65,16 +66,13 @@ app.get('/Ubicacion', (_, res) => {
 })
 
 
-/* Pagina de Error */
+//Error Static page
 app.use((_, res, next) => {
     res.status(404).sendFile(path.join(__dirname, 'dist', 'Error', 'index.html'))
 })
 
-
+//Listen port of website
 app.listen(PORT, 'localhost', () => {
     console.log(`Servidor esta funcionando en http://localhost:${PORT}`)
     console.log(`Aplicacion funcionando correctamente`)
 });
-
-
-/* Probar el funcionamiento del proyecto, antes de actualizar el repo y subirlo a onreder */
