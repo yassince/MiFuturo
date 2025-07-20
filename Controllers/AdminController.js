@@ -9,7 +9,10 @@ const __filename = fileURLToPath(new URL(import.meta.url));
 const __dirname = path.dirname(__filename)
 
 export const AdminController = {
-  //Obtener el bashborad con los datos de estadistica
+  /**
+   * Get the dashboard of admin, show proyect info
+   * @returns 
+   */
   async verDashboard() {
     const totalUsuarios = await AdminModel.obtenerTodosLosUsuarios();
     const totalCuentas = await AdminModel.obtenerTodasLasCuentas();
@@ -26,6 +29,11 @@ export const AdminController = {
     return html;
   },
 
+  /**
+   * Get Users
+   * @param {*} req 
+   * @param {*} res 
+   */
   async obtenerUsuarios(req, res) {
     try {
       const usuarios = await AdminModel.obtenerTodosLosUsuarios();
@@ -48,12 +56,15 @@ export const AdminController = {
       res.send(finalHtml)
 
     } catch (error) {
-      console.log(error);
-
       res.status(404)
     }
   },
 
+  /**
+   * Get Acounts
+   * @param {*} req 
+   * @param {*} res 
+   */
   async obtenerCuentas(req, res) {
     try {
       const cuentas = await AdminModel.obtenerTodasLasCuentas();
@@ -74,6 +85,11 @@ export const AdminController = {
     }
   },
 
+  /**
+   * Get cards
+   * @param {*} req 
+   * @param {*} res 
+   */
   async obtenerTarjetas(req, res) {
     try {
       const tarjetas = await AdminModel.obtenerTodasLasTarjetas();
