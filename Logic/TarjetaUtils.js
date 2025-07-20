@@ -1,4 +1,7 @@
-// Genera un número de tarjeta válido con 16 dígitos aleatorios
+/**
+ * Create numbre (16 digit) if user account
+ * @returns 
+ */
 export function generarNumeroTarjeta() {
     const prefix = '4579';
     let number = prefix;
@@ -8,12 +11,18 @@ export function generarNumeroTarjeta() {
     return number;
 }
 
-// Genera un CVV de 3 dígitos aleatorio
+/**
+ * Generate 3 digit of CVV of card
+ * @returns 
+ */
 export function generarCVV() {
     return String(Math.floor(100 + Math.random() * 900));
 }
 
-// Genera una fecha de expiración a 4 años desde hoy (formato YYYY-MM)
+/**
+ * Generate expiration date for card (4 year of time to expiration)
+ * @returns 
+ */
 export function obtenerFechaExpiracion() {
     const fecha = new Date();
     fecha.setFullYear(fecha.getFullYear() + 4);

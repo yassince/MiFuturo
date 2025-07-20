@@ -1,8 +1,11 @@
 import { pool } from '../MySQL/conexion.js';
 import { z } from 'zod';
 
-/*
- * Funcion para comprobar si el usuario esta autenticado
+/**
+ * Function to make sure that the user is logged.
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
  */
 export function isAuthenticated(req, res, next) {
     if (req.session?.user) {
@@ -12,7 +15,7 @@ export function isAuthenticated(req, res, next) {
     }
 }
 
-//funcion para validar el dni, el usuario que quiera registrarse
+//Function to validate dni letter
 const validateDniLetter = (dni) => {
 
     if (typeof dni !== 'string' || !/^\d{8}[A-Z]$/i.test(dni)) return false;
@@ -25,6 +28,7 @@ const validateDniLetter = (dni) => {
     return letraCalculada === letra;
 };
 
+//Function to make sure that the logged user is the admin
 export function isAdmin(req, res, next) {
     // Verifica si hay sesión activa y el usuario es admin
     if (req.session && req.session.user && req.session.user.email === 'admin@mifuturo.com') {
@@ -35,7 +39,7 @@ export function isAdmin(req, res, next) {
     return res.redirect('/');
 }
 
-//Función para crear el numero de cuenta del usuario
+//Function to create the numbre of user account
 export async function generarNumeroCuenta() {
     const banco = '1234';
     const sucursal = '5678';
@@ -56,7 +60,7 @@ export async function generarNumeroCuenta() {
                 return numeroCompleto;
             }
 
-            // Si ya existe, se repite el bucle
+            //if the numbre exist, it restar the loop
         } catch (error) {
             console.error('Error en consulta:', error);
             throw new Error('Error al generar número de cuenta');
@@ -64,7 +68,7 @@ export async function generarNumeroCuenta() {
     }
 }
 
-//Validación de datos a la hora del registro Contraseña includida
+//Validate the user info, password included
 export const userRegistrationSchema = z.object({
     dni: z.string()
         .min(9, { message: "El DNI debe tener 9 caracteres." })
@@ -135,7 +139,7 @@ export const userRegistrationSchema = z.object({
         .regex(/^[0-9]{9}$/, { message: "El teléfono debe contener solo 9 números." }),
 });
 
-//Validación de datos a la hora del actualizar usuario, Contraseña no includida
+//Validate user info, password not included
 export const userUpdateSchema = z.object({
     dni: z.string()
         .min(9, { message: "El DNI debe tener 9 caracteres." })
@@ -200,7 +204,7 @@ export const userUpdateSchema = z.object({
         .regex(/^[0-9]{9}$/, { message: "El teléfono debe contener solo 9 números." }),
 });
 
-//Para mostar los movimientos del usuario en el perfil
+//Show to user's movements
 export function plantillaMovimiento(mov) {
     const fecha = new Date(mov.fecha_hora);
     const fechaFormateada = `${fecha.toLocaleDateString('en-GB', {
@@ -235,6 +239,8 @@ export function plantillaMovimiento(mov) {
   `;
 }
 
+
+//Template for user dashboard
 export const plantillaTarjetaPerfil = `
 <h1 class="text-center text-3xl text-blue-800 font-bold mt-4">
     Productos
