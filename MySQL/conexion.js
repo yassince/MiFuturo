@@ -1,6 +1,7 @@
 import { Pool } from 'pg'
 import 'dotenv/config'
 
+//Credentials of DB
 const HOST = process.env.DB_HOST
 const USER = process.env.DB_USER
 const DATABASE = process.env.DB_DATABASE
