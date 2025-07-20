@@ -11,9 +11,9 @@ import { UserController } from "./UserController.js";
 class CuentaController {
 
     /**
-     * 
+     * Get user account with dni
      * @param {string} dni of user for get acount 
-     * @returns acount of user
+     * @returns account of user
      */
     static async getCuentaByDNI(dni) {
         let cuenta
@@ -26,8 +26,8 @@ class CuentaController {
     }
 
     /**
-     * 
-     * @param {string} dni of user account for his bank acount delete 
+     * Delete a specific account
+     * @param {string} dni of user account for his bank account delete 
      */
     static async deleteCuenta(dni) {
         try {
@@ -38,7 +38,7 @@ class CuentaController {
     }
 
     /**
-     * 
+     * Create account
      * @param {object} user object for creation the account 
      */
     static async createCuenta({ user }) {
@@ -65,35 +65,39 @@ class CuentaController {
 
     }
 
-    //Accion de ingresar dinero
+    /**
+     * Update account balance (Ingress)
+     * @param {*} req 
+     * @param {*} res 
+     * @returns 
+     */
     static async updateCuentaIngreso(req, res) {
         const dni = req.session.user.dni;
 
-        //Falta obtener el numeor a ingresar
+        // Get the ingress of account
         let saldo = Number(req.body.ingreso)
 
-        //En caso de que supere el limite
+        //we make sure that the balance is lower than the maximum
         if(Number(saldo) > 5000 ){
             return res.redirect(`/user/Perfil?mensaje=${'El Ingreso no puede exceder los 5.000 &euro'}&success=false`)
         }
 
-        //En caso de que sea meno de 0
+        //if balance if lower than 0
         if(Number(saldo) < 0){
            return res.redirect(`/user/Perfil?mensaje=${'El ingreso no puede ser menor de 0 &euro'}&success=false`) 
         }
-        //Obtenemos la cuenta para actualizar info
+        
         const cuenta = await CuentaModel.getCuenta(dni)
-
         if (!cuenta) throw new Error('No se ha encontrado la cuenta')
 
-        //Actualizamos el saldo
+        //Update the balance
         saldo += Number(cuenta.saldo)
 
         try {
-            //Actualizamos los datos
+            //Upate info account
             await CuentaModel.updateCuenta(saldo, dni)
 
-            //Añadimos la transacción
+            //Save the transaction
             await TransferenciaController.movimientoIngreso({
                 cuenta: {
                     id: cuenta.id,
@@ -104,30 +108,32 @@ class CuentaController {
             throw error;
         }
 
-        //redireccionamos al perfil para que el usuario vea los cambios
         res.redirect(`/user/Perfil?mensaje=${'Ingreso hecho correctamente'}&success=true`)
     }
     
-    //Accion del usuario de retiro
+    /**
+     * Update balance account (withdraw)
+     * @param {*} req 
+     * @param {*} res 
+     * @returns 
+     */
     static async updateCuentaRetirar(req, res) {
         const dni = req.session.user.dni;
 
-        //Falta obtener el numero a retirar
+        //Get the balance to withdraw
         let saldo = Number(req.body.retiro)
 
-        //Obtenemos la cuenta para actualizar info
         const cuenta = await CuentaModel.getCuenta(dni)
-
-
         if (!cuenta) throw new Error('No se ha encontrado la cuenta')
 
-        //Actualizamos el saldo
+        //Update the balance account
         let retiro = cuenta.saldo - saldo
 
+        //if balance is lower than 0
         if (retiro < 0) return res.redirect('/User/Perfil?mensaje=' + encodeURIComponent('Su saldo actual no le permite hacer el retiro, por favor ingrese dinero.') + '&success=false')
 
         try {
-            //Actualizamos los datos
+            //Update the info
             await CuentaModel.updateCuenta(retiro, dni)
 
             await TransferenciaController.movimientoRetiro({
@@ -139,24 +145,32 @@ class CuentaController {
         } catch (error) {
             throw error;
         }
-
-        //redireccionamos al perfil para que el usuario vea los cambios
         res.redirect(`/user/Perfil?mensaje=${'Retiro hecho correctamente'}&success=true`)
     }
 
-    //Mostramos el formulario de transferencia
+    /**
+     * Show Transfer form
+     * @param {*} req 
+     * @param {*} res 
+     */
     static async showTransferenciaFrom(req, res) {
         res.sendFile(path.join(__dirname, '..', 'dist', 'Transferencia', 'index.html'))
     }
 
-    //Realizar la transferencia del usuario
+    /**
+     * Do a transfer
+     * @param {*} req 
+     * @param {*} res 
+     * @returns 
+     */
     static async transferencia(req, res) {
         const datos = req.body
 
         if(datos.cantidad < 0){
             res.redirect(`/user/Perfil?mensaje=${'La cantidad no es la correccta, por favor introduzca una cantidad valida.'}&success=false`)
         }
-        //Obtenemos la cuenta de destino
+
+        //Get the destination account 
         let cuentaDestino
         try {
             cuentaDestino = await CuentaModel.getCuentaByNum(datos.cuenta)
@@ -165,7 +179,7 @@ class CuentaController {
             res.redirect(`/user/Perfil?mensaje=${'Número de cuenta no existe'}&success=false`)
         }
 
-        //obtenenos la cuenta de origen
+        //Get the origin account
         let cuentaOrigen
         try {
             cuentaOrigen = await CuentaModel.getCuenta(req.session.user.dni)
@@ -173,18 +187,18 @@ class CuentaController {
             res.redirect(`/user/Perfil?mensaje=${'Error a la hora de realizar la transferencia'}&success=false`)
         }
 
-        //Caso que el usuario quiera hacer una transferencia a si mismo
+        //if the user wants to do a transfer himself
         if (cuentaDestino.numero_cuenta == cuentaOrigen.numero_cuenta) return res.redirect(`/user/Perfil?mensaje=${'No puedes hacer una transferencia a ti mismo'}&success=false`)
 
 
-        //Actualizamos la cuenta destino
+        //Upate destination account (balance) in variable
         let saldoDestino = Number(cuentaDestino.saldo) + Number(datos.cantidad)
         if (saldoDestino <= 0) return res.redirect(`/user/Perfil?mensaje=${'No tienes fondos suficientes para realizar la transferencia'}&success=false`)
 
-        //Actualizamos la cuenta de origen
+        //Update origin account (balance) in variable
         let saldoOrigen = Number(cuentaOrigen.saldo) - Number(datos.cantidad)
 
-        //Actualizamos el saldo de las cuentas
+        //Update the balance of both account
         try {
             await CuentaModel.updateCuenta(saldoOrigen, cuentaOrigen.dni)
             await CuentaModel.updateCuenta(saldoDestino, cuentaDestino.dni)
@@ -192,15 +206,13 @@ class CuentaController {
             res.redirect(`/user/Perfil?mensaje=${'Error al realizar la transferencia'}&success=false`)
         }
 
-        //obtenemos el usuario beneficiario de la transferencia
+        //Get beneficiary user of transfer
         const usuarioBeneficiario = await UserController.getUserByDni(cuentaDestino.dni);
         const nombre = usuarioBeneficiario.nombre+' '+usuarioBeneficiario.apellidos
 
-        //Realizamos el movimiento para el los dos usuarios sepan que ha pasado
+        //Save the movement
         TransferenciaController.transferencia({ cuentaOrigen }, { cuentaDestino }, datos.cantidad, nombre)
 
-
-        //Redireccionamos al perfil y mostramos mensaje de feedback
         res.redirect(`/user/Perfil?mensaje=${'Transferencia realizada correctamente'}&success=true`)
     }
 }

@@ -2,10 +2,14 @@ import TarjetaDebitoModel from '../Models/TarjetaDebitoModel.js';
 import { CuentaModel } from '../Models/CuentaModel.js';
 
 const TarjetaDebitoController = {
-    //Crear la tarjeta
+    /**
+     * Function for creation of user card
+     * @param {*} req 
+     * @param {*} res 
+     * @returns 
+     */
     async crearTarjeta(req, res) {
         const dni = req.session.user.dni;
-        if (!dni) return res.redirect('/User/login?mensaje=' + encodeURIComponent('Inicia sesión, por favor.') + '&success=false');
 
         const cuenta = await CuentaModel.getCuenta(dni);
         if (!cuenta) return res.redirect('/User/Perfil?mensaje=' + encodeURIComponent('Cuenta no encontrada.') + '&success=false');
@@ -20,18 +24,31 @@ const TarjetaDebitoController = {
         res.redirect('/User/Perfil?mensaje=' + encodeURIComponent('Tarjeta creada correctamente.') + '&success=true');
     },
 
+    /**
+     * Get the card asociated to
+     * @param {*} cuenta_id 
+     * @returns 
+     */
     async getTarjeta(cuenta_id){
         return await TarjetaDebitoModel.obtenerTarjetaPorCuenta(cuenta_id);
     },
 
-    //Desactivar tarjeta del usuario
+    /**
+     * Function to disable the card
+     * @param {*} req 
+     * @param {*} res 
+     */
     async bloquearTarjeta(req, res) {
         const id = req.params.id;
         await TarjetaDebitoModel.bloquearTarjeta(id);
         res.redirect('/User/Perfil');
     },
 
-    //Activar la tarjeta del usuario
+    /**
+     * Activade the card
+     * @param {*} req 
+     * @param {*} res 
+     */
     async activarTarjeta(req, res) {
         const id = req.params.id;
         await TarjetaDebitoModel.activarTarjeta(id);
