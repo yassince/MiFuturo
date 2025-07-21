@@ -2,12 +2,15 @@ import express from 'express'
 import path from 'path'
 import session from 'express-session';
 import { fileURLToPath } from 'url';
+import connectPgSimple from 'connect-pg-simple';
 
 //Import the routers
 import ProductoRouter from './routes/Productos.js';
 import UserRouter from './routes/user.js';
 import cuentaRouter from './routes/cuenta.js';
 import adminRouter from './routes/admin.js';
+import { Pool } from 'pg';
+import { pool } from './MySQL/conexion.js';
 
 export const app = express();
 const PORT = process.env.PORT ?? 443;
@@ -19,9 +22,21 @@ const __dirname = path.dirname(__filename)
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
 
+//Configuration for table session in our DB
+const pgPool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+            rejectUnauthorized: false
+    }
+})
+
 
 //Session configuration
 app.use(session({
+    store: new pgSession({
+        pool: pgPool,
+        tablename: 'session'
+    }),
     secret: process.env.SESSION_PASS,
     resave: false,
     saveUninitialized: false,
