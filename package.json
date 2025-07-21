@@ -15,6 +15,7 @@
   "dependencies": {
     "@oslojs/encoding": "^1.1.0",
     "bcryptjs": "^3.0.2",
+    "connect-pg-simple": "^10.0.0",
     "csurf": "^1.2.2",
     "dotenv": "^16.5.0",
     "express": "5.1.0",
