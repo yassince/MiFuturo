@@ -22,6 +22,10 @@ const __dirname = path.dirname(__filename)
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
 
+
+//Create de adapter with express-session
+const pgSession = connectPgSimple(session)
+
 //Configuration for table session in our DB
 const pgPool = new Pool({
     connectionString: process.env.DATABASE_URL,
