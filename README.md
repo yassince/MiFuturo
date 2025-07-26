@@ -1,5 +1,7 @@
 # 💸 MiFuturo - Banca Digital Online
 
+![Imagen Logo MiFuturo](./MiFuturo.png)
+
 **MiFuturo** es una aplicación web de banca digital que permite a los usuarios gestionar sus cuentas personales, realizar transferencias y consultar movimientos financieros desde cualquier lugar de forma segura y sencilla.
 
 ## 🚀 Funcionalidades
