@@ -25,7 +25,7 @@ La aplicación está actualmente desplegada en línea:
 🔗 [https://mifuturo.onreder.com](https://mifuturo.onreder.com)
 
 ## 📂 Estructura del proyecto
-
+``
 MiFuturo/
 ├── Controllers/ # Lógica de control de rutas
 ├── Logic/ # Reglas de negocio
@@ -35,3 +35,4 @@ MiFuturo/
 ├── dist/ # Archivos de producción (Astro)
 ├── server.js # Archivo principal del servidor
 └── README.md # Este archivo
+``
