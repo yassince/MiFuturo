@@ -22,7 +22,7 @@
 ## 🌐 Despliegue
 
 La aplicación está actualmente desplegada en línea:  
-🔗 [https://mifuturo.onreder.com](https://mifuturo.onreder.com)
+🔗 [https://mifuturo.onreder.com](https://mifuturo.onrender.com)
 
 ## 📂 Estructura del proyecto
 
