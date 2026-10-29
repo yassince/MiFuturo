@@ -1,118 +1,25 @@
-import { pool } from '../db/pool.js';
+import { pool } from '../db/pool.js'
 
 export class TransferenciaModel {
-    /**
-     * Opening movement
-     * @param {*} origen 
-     * @param {*} tipo 
-     * @param {*} monto 
-     * @param {*} fecha_hora 
-     * @param {*} descripcion 
-     */
-    static async apreturaCuenta(origen, tipo, monto, fecha_hora, descripcion) {
-        const sql = 'INSERT INTO transacciones (cuenta_origen_id, tipo_transaccion, monto, fecha_hora ,descripcion) VALUES($1, $2, $3, $4, $5);'
-
-        try {
-            await pool.query(sql, [
-                origen,
-                tipo,
-                monto,
-                fecha_hora,
-                descripcion
-            ])
-
-        } catch (error) {
-            throw new Error('Error al insertar transacción: ', error)
-        }
-    }
-
-    /**
-     * Ingress movement
-     * @param {*} destino 
-     * @param {*} saldo 
-     * @param {*} fecha_hora 
-     * @param {*} descripcion 
-     */
-    static async ingreso(destino, saldo, fecha_hora, descripcion) {
-        const sql = 'INSERT INTO transacciones (cuenta_destino_id, tipo_transaccion, monto, fecha_hora ,descripcion) VALUES ($1, $2, $3, $4, $5);'
-
-        try {
-            await pool.query(sql, [
-                destino,
-                'Ingreso',
-                saldo,
-                fecha_hora,
-                descripcion
-            ])
-        } catch (error) {
-            throw new Error('Error al insertar transacción: ', error)
-        }
-    }
-
-    /**
-     * Withdraw movement
-     * @param {*} origen 
-     * @param {*} monto 
-     * @param {*} fecha_hora 
-     * @param {*} descripcion 
-     */
-    static async retiro(origen, monto, fecha_hora, descripcion) {
-        const sql = 'INSERT INTO transacciones (cuenta_origen_id,tipo_transaccion,monto,fecha_hora,descripcion) VALUES($1, $2, $3, $4, $5);'
-
-        try {
-            await pool.query(sql, [
-                origen,
-                'Retiro',
-                monto,
-                fecha_hora,
-                descripcion
-            ])
-        } catch (error) {
-            throw new Error('Error al insertar transacción: ', error)
-        }
-    }
-
-    /**
-     * Function for transfer between accounts
-     * @param {*} origen 
-     * @param {*} destino 
-     * @param {*} tipo 
-     * @param {*} monto 
-     * @param {*} fecha_hora 
-     * @param {*} descripcion 
-     */
-    static async transferencia(origen, destino, tipo, monto, fecha_hora, descripcion) {
-        const sql = 'INSERT INTO transacciones (cuenta_origen_id, cuenta_destino_id, tipo_transaccion, monto, fecha_hora ,descripcion) VALUES($1, $2, $3, $4, $5, $6);'
-
-        try {
-            await pool.query(sql, [
-                origen,
-                destino,
-                tipo,
-                monto,
-                fecha_hora,
-                descripcion
-            ])
-
-        } catch (error) {
-            throw new Error('Error al insertar transacción: ', error)
-        }
-    }
-
-    /**
-     * Get all movement of specific user
-     * @param {*} id 
-     * @returns 
-     */
     static async getmovimientos(id) {
-        const sql = "SELECT *, CASE WHEN cuenta_origen_id = $1 THEN 'salida' WHEN cuenta_destino_id = $2 THEN 'entrada' ELSE 'desconocido' END AS direccion FROM transacciones WHERE cuenta_origen_id = $3 OR cuenta_destino_id = $4 ORDER BY fecha_hora DESC;"
-
-        try {
-            const resutl = await pool.query(sql, [id, id, id, id])
-
-            return resutl.rows
-        } catch (error) {
-            throw new Error('Error al insertar transacción: ', error)
-        }
+        const result = await pool.query(
+            `SELECT m.tipo AS tipo_transaccion,
+                    ABS(a.importe_centimos) / 100.0 AS monto,
+                    a.contabilizado_en AS fecha_hora,
+                    CASE WHEN a.importe_centimos >= 0 THEN 'entrada' ELSE 'salida' END AS direccion,
+                    CASE m.tipo
+                        WHEN 'APERTURA' THEN 'Apertura de cuenta'
+                        WHEN 'INGRESO' THEN 'Ingreso'
+                        WHEN 'RETIRO' THEN 'Retiro'
+                        WHEN 'TRANSFERENCIA' THEN 'Transferencia'
+                        ELSE m.tipo
+                    END AS descripcion
+             FROM apuntes a
+             JOIN movimientos m ON m.id = a.movimiento_id
+             WHERE a.cuenta_id = $1
+             ORDER BY a.contabilizado_en DESC`,
+            [id],
+        )
+        return result.rows
     }
 }

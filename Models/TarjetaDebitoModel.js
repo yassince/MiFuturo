@@ -1,71 +1,47 @@
-import { pool } from '../db/pool.js';
-import { generarNumeroTarjeta, generarCVV, obtenerFechaExpiracion } from '../Logic/TarjetaUtils.js';
+import { pool } from '../db/pool.js'
+import { generarNumeroTarjeta, obtenerFechaExpiracion } from '../Logic/TarjetaUtils.js'
+
+function vista(fila) {
+    if (!fila) return fila
+    const mes = String(fila.mes_caducidad).padStart(2, '0')
+    return {
+        id: fila.id,
+        cuenta_id: fila.cuenta_id,
+        numero_tarjeta: fila.ultimos4,
+        fecha_expiracion: `${fila.anio_caducidad}-${mes}`,
+        activa: fila.estado === 'ACTIVA',
+    }
+}
 
 const TarjetaDebitoModel = {
-    /**
-     * Create card for user
-     * @param {*} cuenta_id 
-     * @returns 
-     */
     async crearTarjeta(cuenta_id) {
-        try {
-            const numero_tarjeta = generarNumeroTarjeta();
-            const cvv = generarCVV();
-            const fecha_expiracion = obtenerFechaExpiracion();
-
-            const sql = `
-            INSERT INTO tarjetas_debito (numero_tarjeta, fecha_expiracion, cvv, activa, cuenta_id)
-            VALUES ($1, $2, $3, false, $4) RETURNING id`;
-
-            const result = await pool.query(sql, [numero_tarjeta, fecha_expiracion, cvv, cuenta_id]);
-            return result.rows[0].id;
-        } catch (error) {
-            console.log(error);
-            
-            throw new Error("No se pudo crear la tarjeta.");
-        }
+        const ultimos4 = generarNumeroTarjeta().slice(-4)
+        const [anio, mes] = obtenerFechaExpiracion().split('-')
+        const result = await pool.query(
+            `INSERT INTO tarjetas (cuenta_id, ultimos4, mes_caducidad, anio_caducidad)
+             VALUES ($1, $2, $3, $4)
+             RETURNING id`,
+            [cuenta_id, ultimos4, Number(mes), Number(anio)],
+        )
+        return result.rows[0].id
     },
 
-    /**
-     * Get card with his account id
-     * @param {*} cuenta_id 
-     * @returns 
-     */
     async obtenerTarjetaPorCuenta(cuenta_id) {
-        try {
-            const sql = 'SELECT * FROM tarjetas_debito WHERE cuenta_id = $1';
-            const result = await pool.query(sql, [cuenta_id]);
-            return result.rows[0];
-        } catch (error) {
-            throw new Error("No se pudo obtener la tarjeta.");
-        }
+        const result = await pool.query(
+            `SELECT id, cuenta_id, ultimos4, mes_caducidad, anio_caducidad, estado
+             FROM tarjetas WHERE cuenta_id = $1`,
+            [cuenta_id],
+        )
+        return vista(result.rows[0])
     },
 
-    /**
-     * Lock a card
-     * @param {*} id 
-     */
     async bloquearTarjeta(id) {
-        try {
-            const sql = 'UPDATE tarjetas_debito SET activa = false WHERE id = $1';
-            await pool.query(sql, [id]);
-        } catch (error) {
-            throw new Error("No se pudo bloquear la tarjeta.");
-        }
+        await pool.query(`UPDATE tarjetas SET estado = 'BLOQUEADA' WHERE id = $1`, [id])
     },
 
-    /**
-     * Activate a card
-     * @param {*} id 
-     */
     async activarTarjeta(id) {
-        try {
-            const sql = 'UPDATE tarjetas_debito SET activa = true WHERE id = $1';
-            await pool.query(sql, [id]);
-        } catch (error) {
-            throw new Error("No se pudo activar la tarjeta.");
-        }
-    }
-};
+        await pool.query(`UPDATE tarjetas SET estado = 'ACTIVA' WHERE id = $1`, [id])
+    },
+}
 
-export default TarjetaDebitoModel;
+export default TarjetaDebitoModel

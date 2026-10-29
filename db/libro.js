@@ -9,7 +9,8 @@ const schemaSql = fs.readFileSync(
 )
 
 export async function aplicarEsquema(db) {
-    await db.exec(schemaSql)
+    const partes = schemaSql.split(';').map((parte) => parte.trim()).filter(Boolean)
+    for (const parte of partes) await db.query(parte)
 }
 
 export async function crearCliente(db, datos) {
@@ -55,28 +56,123 @@ export async function crearTarjeta(db, { cuentaId, ultimos4, mes, anio }) {
     return result.rows[0]
 }
 
-export async function contabilizar(db, { tipo, clave, lineas }) {
+export const CCC_CAJA = '00000000000000000001'
+
+export function aCentimos(euros) {
+    return Math.round(Number(euros) * 100)
+}
+
+function esPool(db) {
+    return typeof db.connect === 'function' && typeof db.release !== 'function'
+}
+
+async function enConexion(db, fn) {
+    if (!esPool(db)) return fn(db)
+    const client = await db.connect()
+    try {
+        return await fn(client)
+    } finally {
+        client.release()
+    }
+}
+
+export async function asegurarCaja(db) {
+    return enConexion(db, asegurarCajaEn)
+}
+
+async function asegurarCajaEn(client) {
+    const iban = ibanEspanol(CCC_CAJA)
+    const existe = await client.query('SELECT id, iban FROM cuentas WHERE iban = $1', [iban])
+    if (existe.rows[0]) return existe.rows[0]
+
+    const creada = await client.query(
+        `INSERT INTO cuentas (cliente_id, tipo, iban)
+         VALUES (NULL, 'INTERNA', $1)
+         RETURNING id, iban`,
+        [iban],
+    )
+    return creada.rows[0]
+}
+
+export async function ingresar(db, { cuentaId, centimos, clave }) {
+    return enConexion(db, async (client) => {
+        const caja = await asegurarCajaEn(client)
+        return contabilizarEn(client, {
+            tipo: 'INGRESO',
+            clave,
+            lineas: [
+                { cuentaId: caja.id, importeCentimos: -centimos },
+                { cuentaId, importeCentimos: centimos },
+            ],
+        })
+    })
+}
+
+export async function retirar(db, { cuentaId, centimos, clave }) {
+    return enConexion(db, async (client) => {
+        const caja = await asegurarCajaEn(client)
+        return contabilizarEn(client, {
+            tipo: 'RETIRO',
+            clave,
+            lineas: [
+                { cuentaId, importeCentimos: -centimos },
+                { cuentaId: caja.id, importeCentimos: centimos },
+            ],
+        })
+    })
+}
+
+export async function transferir(db, { origenId, destinoId, centimos, clave }) {
+    return enConexion(db, (client) => contabilizarEn(client, {
+        tipo: 'TRANSFERENCIA',
+        clave,
+        lineas: [
+            { cuentaId: origenId, importeCentimos: -centimos },
+            { cuentaId: destinoId, importeCentimos: centimos },
+        ],
+    }))
+}
+
+export async function abrirConSaldo(db, { cuentaId, centimos, clave }) {
+    return enConexion(db, async (client) => {
+        const caja = await asegurarCajaEn(client)
+        return contabilizarEn(client, {
+            tipo: 'APERTURA',
+            clave,
+            lineas: [
+                { cuentaId: caja.id, importeCentimos: -centimos },
+                { cuentaId, importeCentimos: centimos },
+            ],
+        })
+    })
+}
+
+export async function contabilizar(db, args) {
+    return enConexion(db, (client) => contabilizarEn(client, args))
+}
+
+export async function contabilizarEn(client, { tipo, clave, lineas }, { transaccion = true } = {}) {
     const suma = lineas.reduce((total, linea) => total + BigInt(linea.importeCentimos), 0n)
     if (suma !== 0n) throw new Error('El movimiento no cuadra')
     if (lineas.length < 2) throw new Error('Hacen falta dos apuntes')
 
-    await db.query('BEGIN')
+    if (transaccion) await client.query('BEGIN')
     try {
-        const yaExiste = await db.query(
+        const yaExiste = await client.query(
             'SELECT id FROM movimientos WHERE clave_idempotencia = $1',
             [clave],
         )
         if (yaExiste.rows.length > 0) {
-            await db.query('COMMIT')
+            if (transaccion) await client.query('COMMIT')
             return { id: yaExiste.rows[0].id, repetido: true }
         }
 
         const ids = [...new Set(lineas.map((linea) => linea.cuentaId))].sort()
         for (const id of ids) {
-            await db.query('SELECT id FROM cuentas WHERE id = $1 FOR UPDATE', [id])
+            await client.query('SELECT id FROM cuentas WHERE id = $1 FOR UPDATE', [id])
         }
 
-        const movimiento = await db.query(
+        const movimiento = await client.query(
             `INSERT INTO movimientos (tipo, clave_idempotencia)
              VALUES ($1, $2)
              RETURNING id`,
@@ -85,7 +181,7 @@ export async function contabilizar(db, { tipo, clave, lineas }) {
         const movimientoId = movimiento.rows[0].id
 
         for (const linea of [...lineas].sort((a, b) => String(a.cuentaId).localeCompare(String(b.cuentaId)))) {
-            const actualizada = await db.query(
+            const actualizada = await client.query(
                 `UPDATE cuentas
                  SET saldo_centimos = saldo_centimos + $1
                  WHERE id = $2
@@ -96,17 +192,17 @@ export async function contabilizar(db, { tipo, clave, lineas }) {
             if (actualizada.rows.length === 0) {
                 throw new Error('Saldo insuficiente')
             }
-            await db.query(
+            await client.query(
                 `INSERT INTO apuntes (movimiento_id, cuenta_id, importe_centimos)
                  VALUES ($1, $2, $3)`,
                 [movimientoId, linea.cuentaId, linea.importeCentimos],
             )
         }
 
-        await db.query('COMMIT')
+        if (transaccion) await client.query('COMMIT')
         return { id: movimientoId, repetido: false }
     } catch (error) {
-        await db.query('ROLLBACK')
+        if (transaccion) await client.query('ROLLBACK')
         throw error
     }
 }

@@ -22,7 +22,11 @@ export class UserModel {
         }
         try {
             const result = await pool.query(
-                'SELECT * FROM clientes WHERE DNI = $1',
+                `SELECT numero_documento AS dni, nombre, apellidos, fecha_nacimiento,
+                        direccion, telefono, password_hash AS contrasena, email,
+                        creado_en AS fecha_alta, estado
+                 FROM clientes
+                 WHERE numero_documento = $1`,
                 [dni]
             );
 
@@ -74,7 +78,10 @@ export class UserModel {
 
         try {
             await pool.query(
-                'INSERT INTO clientes (dni,nombre,apellidos,fecha_nacimiento,direccion,telefono,contrasena,email,fecha_alta) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
+                `INSERT INTO clientes (
+                    tipo_documento, numero_documento, nombre, apellidos, fecha_nacimiento,
+                    direccion, telefono, password_hash, email, creado_en
+                 ) VALUES ('DNI',$1,$2,$3,$4,$5,$6,$7,$8,$9)`,
                 [user.dni, user.nombre, user.apellidos, user.fecha_nacimiento, user.direccion, user.telefono, contraseña, user.email, fecha_alta]
             )
         } catch (error) {
@@ -110,7 +117,7 @@ export class UserModel {
 
         const isMatch = await bcrypt.compare(user.contraseña, userData.contrasena)
 
-        if (isMatch) {
+        if (isMatch && userData.estado === 'ACTIVO') {
             return {
                 dni: userData.dni,
                 email: userData.email
@@ -147,7 +154,10 @@ export class UserModel {
             : current.contrasena
 
         const result = await pool.query(
-            'UPDATE Clientes SET nombre = $1, apellidos = $2, fecha_nacimiento = $3, direccion = $4, telefono = $5, email = $6, contrasena=$7 WHERE dni = $8',
+            `UPDATE clientes
+             SET nombre = $1, apellidos = $2, fecha_nacimiento = $3, direccion = $4,
+                 telefono = $5, email = $6, password_hash = $7
+             WHERE numero_documento = $8`,
             [
                 user.nombre,
                 user.apellidos,
@@ -171,7 +181,8 @@ export class UserModel {
     static async remove(dni) {
         try {
             const result = await pool.query(
-                'DELETE FROM clientes WHERE dni = $1',
+                `UPDATE clientes SET estado = 'CERRADO'
+                 WHERE numero_documento = $1 AND estado <> 'CERRADO'`,
                 [dni]
             );
             if (result.rowCount > 0) {

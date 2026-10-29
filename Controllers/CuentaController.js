@@ -4,8 +4,6 @@ import path from 'path'
 import { getDirname } from '../Logic/dirname.js';
 const __dirname = getDirname(import.meta.url)
 
-import { TransferenciaController } from "./TransferenciaController.js";
-import { UserController } from "./UserController.js";
 import { parseMonto } from "../Logic/security/montos.js";
 import fs from 'fs';
 import { inyectarCsrf } from "../Logic/security/html.js";
@@ -48,17 +46,10 @@ class CuentaController {
         const numCuenta = await generarNumeroCuenta();
 
         try {
-            const idCount = await CuentaModel.crearCuenta({
+            await CuentaModel.crearCuenta({
                 cuenta: {
                     dni: user.dni,
                     numero_cuenta: numCuenta,
-                    saldo: 100
-                }
-            })
-
-            await TransferenciaController.CuentaAbierta({
-                cuenta: {
-                    id: idCount
                 }
             })
 
@@ -88,16 +79,8 @@ class CuentaController {
             return res.redirect(`/user/Perfil?mensaje=${encodeURIComponent('No se ha encontrado la cuenta')}&success=false`)
         }
 
-        const saldo = Number(cuenta.saldo) + monto.value
-
         try {
-            await CuentaModel.updateCuenta(saldo, dni)
-            await TransferenciaController.movimientoIngreso({
-                cuenta: {
-                    id: cuenta.id,
-                    saldo: monto.value
-                }
-            })
+            await CuentaModel.ingresar(cuenta.id, monto.value)
         } catch {
             return res.redirect(`/user/Perfil?mensaje=${encodeURIComponent('No se ha podido registrar el ingreso.')}&success=false`)
         }
@@ -125,21 +108,17 @@ class CuentaController {
             return res.redirect(`/User/Perfil?mensaje=${encodeURIComponent('No se ha encontrado la cuenta')}&success=false`)
         }
 
-        const retiro = Number(cuenta.saldo) - monto.value
-        if (retiro < 0) {
+        if (Number(cuenta.saldo) - monto.value < 0) {
             return res.redirect('/User/Perfil?mensaje=' + encodeURIComponent('Su saldo actual no le permite hacer el retiro, por favor ingrese dinero.') + '&success=false')
         }
 
         try {
-            await CuentaModel.updateCuenta(retiro, dni)
-            await TransferenciaController.movimientoRetiro({
-                cuenta: {
-                    id: cuenta.id,
-                    saldo: monto.value
-                }
-            })
-        } catch {
-            return res.redirect(`/user/Perfil?mensaje=${encodeURIComponent('No se ha podido registrar el retiro.')}&success=false`)
+            await CuentaModel.retirar(cuenta.id, monto.value)
+        } catch (error) {
+            const mensaje = error?.message === 'Saldo insuficiente'
+                ? 'Su saldo actual no le permite hacer el retiro, por favor ingrese dinero.'
+                : 'No se ha podido registrar el retiro.'
+            return res.redirect(`/user/Perfil?mensaje=${encodeURIComponent(mensaje)}&success=false`)
         }
 
         return res.redirect(`/user/Perfil?mensaje=${encodeURIComponent('Retiro hecho correctamente')}&success=true`)
@@ -187,24 +166,18 @@ class CuentaController {
             return res.redirect(`/user/Perfil?mensaje=${encodeURIComponent('No puedes hacer una transferencia a ti mismo')}&success=false`)
         }
 
-        const saldoOrigen = Number(cuentaOrigen.saldo) - monto.value
-        if (saldoOrigen < 0) {
+        if (Number(cuentaOrigen.saldo) - monto.value < 0) {
             return res.redirect(`/user/Perfil?mensaje=${encodeURIComponent('No tienes fondos suficientes para realizar la transferencia')}&success=false`)
         }
 
-        const saldoDestino = Number(cuentaDestino.saldo) + monto.value
-
         try {
-            await CuentaModel.updateCuenta(saldoOrigen, cuentaOrigen.dni)
-            await CuentaModel.updateCuenta(saldoDestino, cuentaDestino.dni)
-        } catch {
-            return res.redirect(`/user/Perfil?mensaje=${encodeURIComponent('Error al realizar la transferencia')}&success=false`)
+            await CuentaModel.transferir(cuentaOrigen.id, cuentaDestino.id, monto.value)
+        } catch (error) {
+            const mensaje = error?.message === 'Saldo insuficiente'
+                ? 'No tienes fondos suficientes para realizar la transferencia'
+                : 'Error al realizar la transferencia'
+            return res.redirect(`/user/Perfil?mensaje=${encodeURIComponent(mensaje)}&success=false`)
         }
-
-        const usuarioBeneficiario = await UserController.getUserByDni(cuentaDestino.dni);
-        const nombre = `${usuarioBeneficiario?.nombre ?? ''} ${usuarioBeneficiario?.apellidos ?? ''}`.trim()
-
-        await TransferenciaController.transferencia({ cuentaOrigen }, { cuentaDestino }, monto.value, nombre)
 
         return res.redirect(`/user/Perfil?mensaje=${encodeURIComponent('Transferencia realizada correctamente')}&success=true`)
     }

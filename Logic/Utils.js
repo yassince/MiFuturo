@@ -1,4 +1,5 @@
 import { pool } from '../db/pool.js';
+import { ibanEspanol } from '../db/iban.js';
 import { z } from 'zod';
 import { escapeHtml } from './security/html.js';
 import { esAdmin } from './roles.js';
@@ -48,8 +49,8 @@ export async function generarNumeroCuenta() {
 
         try {
             const result = await pool.query(
-                'SELECT numero_cuenta FROM cuentas WHERE numero_cuenta = $1',
-                [numeroCompleto]
+                'SELECT iban FROM cuentas WHERE iban = $1',
+                [ibanEspanol(numeroCompleto)]
             );
             if (result.rows.length === 0) {
                 return numeroCompleto;
