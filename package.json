@@ -7,7 +7,8 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "test": "NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --watchAll=false",
-    "test:watch": "NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --watch"
+    "test:watch": "NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "db:demo": "node scripts/demo-libro.js"
   },
   "keywords": [],
   "author": "",
@@ -29,6 +30,7 @@
     "cookie": "^0.7.0"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.13",
     "jest": "^30.5.2",
     "supertest": "^7.3.1"
   }
