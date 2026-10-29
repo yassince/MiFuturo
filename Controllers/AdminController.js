@@ -3,6 +3,8 @@ import path from 'path'
 import { bloqueUsuario, plantillaTarjeta, plantillaCuenta } from "../Logic/Utils.js";
 import { fileURLToPath } from 'url';
 import fs from 'fs'
+import { escapeHtml } from "../Logic/security/html.js";
+import { presentarTarjeta } from "../Logic/security/tarjeta.js";
 
 //path del archivo admin home
 const __filename = fileURLToPath(new URL(import.meta.url));
@@ -42,14 +44,14 @@ export const AdminController = {
 
       const bloquesHtml = usuarios.map((usuario) => {
         return bloqueUsuario
-          .replace(/__NOMBRE__/g, usuario.nombre)
-          .replace(/__APELLIDOS__/g, usuario.apellidos)
-          .replace(/__EMAIL__/g, usuario.email)
-          .replace(/__DNI__/g, usuario.dni)
-          .replace(/__TELEFONO__/g, usuario.telefono)
-          .replace(/__DIRECCION__/g, usuario.direccion)
-          .replace(/__FECHA_NAC__/g, usuario.fecha_nacimiento)
-          .replace(/__FECHA_ALTA__/g, usuario.fecha_alta);
+          .replace(/__NOMBRE__/g, escapeHtml(usuario.nombre))
+          .replace(/__APELLIDOS__/g, escapeHtml(usuario.apellidos))
+          .replace(/__EMAIL__/g, escapeHtml(usuario.email))
+          .replace(/__DNI__/g, escapeHtml(usuario.dni))
+          .replace(/__TELEFONO__/g, escapeHtml(usuario.telefono))
+          .replace(/__DIRECCION__/g, escapeHtml(usuario.direccion))
+          .replace(/__FECHA_NAC__/g, escapeHtml(usuario.fecha_nacimiento))
+          .replace(/__FECHA_ALTA__/g, escapeHtml(usuario.fecha_alta));
       }).join('\n');
 
       const finalHtml = template.replace('__TABLA_USUARIOS__', bloquesHtml);
@@ -73,9 +75,9 @@ export const AdminController = {
 
       let bloqueCuentas = cuentas.map(cuenta =>
         plantillaCuenta
-          .replace(/__NUMERO_CUENTA__/g, cuenta.numero_cuenta)
-          .replace(/__SALDO__/g, cuenta.saldo)
-          .replace(/__FECHA_APERTURA__/g, new Date(cuenta.fecha_apertura).toLocaleDateString())
+          .replace(/__NUMERO_CUENTA__/g, escapeHtml(cuenta.numero_cuenta))
+          .replace(/__SALDO__/g, escapeHtml(cuenta.saldo))
+          .replace(/__FECHA_APERTURA__/g, escapeHtml(new Date(cuenta.fecha_apertura).toLocaleDateString()))
       ).join('\n');
 
       const finalHtml = template.replace('__TABLA_USUARIOS__', bloqueCuentas);
@@ -99,13 +101,14 @@ export const AdminController = {
       let bloqueTarjetas = '';
       for (const tarjeta of tarjetas) {
         const estado = tarjeta.activa ? 'Activa' : 'Bloqueada';
+        const vista = presentarTarjeta(tarjeta)
 
         const bloque = plantillaTarjeta
-          .replace(/__NUMERO_TARJETA__/g, tarjeta.numero_tarjeta)
-          .replace(/__FECHA_EXPIRACION__/g, tarjeta.fecha_expiracion)
-          .replace(/__CVV__/g, tarjeta.cvv)
-          .replace(/__CUENTA_ID__/g, tarjeta.cuenta_id)
-          .replace(/__ESTADO__/g, estado);
+          .replace(/__NUMERO_TARJETA__/g, vista.numero)
+          .replace(/__FECHA_EXPIRACION__/g, vista.expiracion)
+          .replace(/__CVV__/g, vista.cvv)
+          .replace(/__CUENTA_ID__/g, escapeHtml(tarjeta.cuenta_id))
+          .replace(/__ESTADO__/g, escapeHtml(estado));
 
         bloqueTarjetas += bloque;
       }

@@ -3,6 +3,13 @@ import { userRegistrationSchema, userUpdateSchema } from '../Logic/Utils.js';
 import { pool } from '../MySQL/conexion.js';
 import bcrypt from 'bcryptjs'
 
+let hashFicticioPromesa
+
+function hashFicticio() {
+    hashFicticioPromesa ??= bcrypt.hash('timing-equalization', 10)
+    return hashFicticioPromesa
+}
+
 export class UserModel {
     /**
      * Get specific user
@@ -37,7 +44,7 @@ export class UserModel {
      * @param {object} object user for registration in database 
      */
     static async register({ user }) {
-        if (!user) return new Error('Es necesario los datos del usuario para poder registrarlo correctamente')
+        if (!user) throw new Error('Es necesario los datos del usuario para poder registrarlo correctamente')
 
         const existUser = await this.getUserByDni(user.dni)
         if (existUser) throw new Error('El usuario ya existe')
@@ -81,7 +88,11 @@ export class UserModel {
      * @returns 
      */
     static async login({ user }) {
-        if (!user.contraseña || !user.dni) return new Error('No se ha podido a podido inicar sesión correctamente')
+        if (!user.contraseña || !user.dni) {
+            const error = new Error('Credenciales incorrectas')
+            error.code = 'AUTH'
+            throw error
+        }
 
         let userData
         try {
@@ -90,18 +101,25 @@ export class UserModel {
             throw error
         }
 
-        if (!userData) throw new Error("Usuario no existe");
-        const isMatch = await bcrypt.compare(user.contraseña, userData.contrasena)//Compare the password
+        if (!userData) {
+            await bcrypt.compare(user.contraseña, await hashFicticio())
+            const error = new Error('Credenciales incorrectas')
+            error.code = 'AUTH'
+            throw error
+        }
 
-        //If the pass match, we got back the user's DNI and user's email.
+        const isMatch = await bcrypt.compare(user.contraseña, userData.contrasena)
+
         if (isMatch) {
             return {
                 dni: userData.dni,
                 email: userData.email
             }
-        } else {
-            throw new Error('Contraseña Incorrecta')
         }
+
+        const error = new Error('Credenciales incorrectas')
+        error.code = 'AUTH'
+        throw error
     }
     /**
      * Update user
@@ -109,35 +127,25 @@ export class UserModel {
      * @returns true or false depending of affected rows on database
      */
     static async update({ user }) {
-        if (!user) return new Error('Es necesario el usuario para la actualización')
+        if (!user) throw new Error('Es necesario el usuario para la actualización')
 
-        let validation;
-        let pass;
-        //If the user not change the hash pass of the update form
-        if (user.contraseña.length > 50) {
-            validation = userUpdateSchema.safeParse(user)
-        } else {
-            //if user want change the password
-            const salt = await bcrypt.genSalt(10)
-            pass = await bcrypt.hash(user.contraseña, salt)
-            validation = userRegistrationSchema.safeParse(user)
-        }
+        const current = await this.getUserByDni(user.dni)
+        if (!current) throw new Error(`Usuario con DNI ${user.dni} no encontrado.`)
 
-        //Validate user info with zod
+        const cambiaPassword = typeof user.contraseña === 'string' && user.contraseña.length > 0
+        const validation = cambiaPassword
+            ? userRegistrationSchema.safeParse(user)
+            : userUpdateSchema.safeParse(user)
+
         if (!validation.success) {
-            const errors = {};
-            validation.error.errors.forEach(err => {
-                errors[err.path.join('.')] = err.message;
-            });
-            let errores = Object.values(errors).join(' ')
+            const errores = validation.error.errors.map(err => err.message).join(' ')
             throw new Error(errores)
         }
 
+        const pass = cambiaPassword
+            ? await bcrypt.hash(user.contraseña, 10)
+            : current.contrasena
 
-        const userData = this.getUserByDni(user.dni)
-        if (!userData) throw new Error(`Usuario con DNI ${user.dni} no encontrado.`);
-
-        //Update the user info
         const result = await pool.query(
             'UPDATE Clientes SET nombre = $1, apellidos = $2, fecha_nacimiento = $3, direccion = $4, telefono = $5, email = $6, contrasena=$7 WHERE dni = $8',
             [
@@ -147,17 +155,12 @@ export class UserModel {
                 user.direccion,
                 user.telefono,
                 user.email,
-                pass ?? user.contraseña,
+                pass,
                 user.dni,
             ]
         );
 
-        if (result.rowCount > 1) {
-            console.log('Usuario actualizado');
-            true
-        } else {
-            return false
-        }
+        return result.rowCount > 0
     }
 
     /**

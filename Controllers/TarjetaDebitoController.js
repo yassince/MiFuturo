@@ -1,5 +1,24 @@
 import TarjetaDebitoModel from '../Models/TarjetaDebitoModel.js';
 import { CuentaModel } from '../Models/CuentaModel.js';
+import { puedeGestionarTarjeta } from '../Logic/security/tarjeta.js';
+
+async function exigirTarjetaPropia(req, res) {
+    let cuenta
+    try {
+        cuenta = await CuentaModel.getCuenta(req.session.user.dni)
+    } catch {
+        res.redirect('/User/Perfil?mensaje=' + encodeURIComponent('Cuenta no encontrada.') + '&success=false')
+        return null
+    }
+
+    const tarjeta = await TarjetaDebitoModel.obtenerTarjetaPorCuenta(cuenta.id)
+    if (!puedeGestionarTarjeta(tarjeta, { cuentaId: cuenta.id, tarjetaId: req.params.id })) {
+        res.redirect('/User/Perfil?mensaje=' + encodeURIComponent('No puedes modificar esa tarjeta.') + '&success=false')
+        return null
+    }
+
+    return tarjeta
+}
 
 const TarjetaDebitoController = {
     /**
@@ -39,8 +58,9 @@ const TarjetaDebitoController = {
      * @param {*} res 
      */
     async bloquearTarjeta(req, res) {
-        const id = req.params.id;
-        await TarjetaDebitoModel.bloquearTarjeta(id);
+        const tarjeta = await exigirTarjetaPropia(req, res)
+        if (!tarjeta) return
+        await TarjetaDebitoModel.bloquearTarjeta(tarjeta.id);
         res.redirect('/User/Perfil');
     },
 
@@ -50,8 +70,9 @@ const TarjetaDebitoController = {
      * @param {*} res 
      */
     async activarTarjeta(req, res) {
-        const id = req.params.id;
-        await TarjetaDebitoModel.activarTarjeta(id);
+        const tarjeta = await exigirTarjetaPropia(req, res)
+        if (!tarjeta) return
+        await TarjetaDebitoModel.activarTarjeta(tarjeta.id);
         res.redirect('/User/Perfil');
     }
 };

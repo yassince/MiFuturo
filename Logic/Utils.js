@@ -1,5 +1,7 @@
 import { pool } from '../MySQL/conexion.js';
 import { z } from 'zod';
+import { escapeHtml } from './security/html.js';
+import { esAdmin } from './roles.js';
 
 /**
  * Function to make sure that the user is logged.
@@ -30,12 +32,7 @@ const validateDniLetter = (dni) => {
 
 //Function to make sure that the logged user is the admin
 export function isAdmin(req, res, next) {
-    // Verifica si hay sesión activa y el usuario es admin
-    if (req.session && req.session.user && req.session.user.email === 'admin@mifuturo.com') {
-        return next();
-    }
-
-    // Si no es admin, redirigir o bloquear
+    if (esAdmin(req.session?.user)) return next();
     return res.redirect('/');
 }
 
@@ -226,13 +223,13 @@ export function plantillaMovimiento(mov) {
     return `
     <div class="movimiento border-b-2 border-gray-800 pb-4 mb-4">
       <div class="tituloDinerof flex justify-between text-3xl">
-        <span class="${color}">${tipo}</span>
+        <span class="${color}">${escapeHtml(tipo)}</span>
         <span class="text-blue-700 font-bold">
           ${signo}${Number(mov.monto).toFixed(2).replace('.', ',')} &euro;
         </span>
       </div>
-      <p class="text-2xl">${mov.descripcion}</p>
-      <p class="text-2xl text-blue-500">${fechaFormateada}</p>
+      <p class="text-2xl">${escapeHtml(mov.descripcion)}</p>
+      <p class="text-2xl text-blue-500">${escapeHtml(fechaFormateada)}</p>
     </div>
   `;
 }
