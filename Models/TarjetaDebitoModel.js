@@ -1,4 +1,4 @@
-import { pool } from '../MySQL/conexion.js';
+import { pool } from '../db/pool.js';
 import { generarNumeroTarjeta, generarCVV, obtenerFechaExpiracion } from '../Logic/TarjetaUtils.js';
 
 const TarjetaDebitoModel = {

@@ -2,6 +2,37 @@ import { parseMonto } from '../Logic/security/montos.js'
 import { presentarTarjeta, puedeGestionarTarjeta } from '../Logic/security/tarjeta.js'
 import { escapeHtml, inyectarCsrf } from '../Logic/security/html.js'
 import { cookieSecure } from '../Logic/security/cookie.js'
+import { opcionesPool } from '../db/pool.js'
+
+describe('pool', () => {
+    const remota = {
+        NODE_ENV: 'production',
+        DATABASE_URL: 'postgresql://user:secret@db.example:5432/mifuturo',
+        DB_SSL_REJECT_UNAUTHORIZED: 'true',
+    }
+
+    it('usa un solo juego de opciones de pg', () => {
+        expect(opcionesPool(remota)).toEqual({
+            connectionString: remota.DATABASE_URL,
+            max: 10,
+            idleTimeoutMillis: 30_000,
+            connectionTimeoutMillis: 5_000,
+            ssl: { rejectUnauthorized: true },
+        })
+    })
+
+    it('no fuerza ssl en test ni en localhost', () => {
+        expect(opcionesPool({ NODE_ENV: 'test' }).ssl).toBe(false)
+        expect(opcionesPool({
+            NODE_ENV: 'development',
+            DATABASE_URL: 'postgresql://user:secret@127.0.0.1:5432/mifuturo',
+        }).ssl).toBe(false)
+    })
+
+    it('en produccion exige DATABASE_URL', () => {
+        expect(() => opcionesPool({ NODE_ENV: 'production' })).toThrow(/DATABASE_URL/)
+    })
+})
 
 describe('importes', () => {
     it('acepta un decimal positivo de dos cifras', () => {

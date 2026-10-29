@@ -1,6 +1,6 @@
 
 import { userRegistrationSchema, userUpdateSchema } from '../Logic/Utils.js';
-import { pool } from '../MySQL/conexion.js';
+import { pool } from '../db/pool.js';
 import bcrypt from 'bcryptjs'
 
 let hashFicticioPromesa

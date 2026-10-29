@@ -1,5 +1,5 @@
 import supertest from 'supertest'
-import { pool } from '../MySQL/conexion.js'
+import { pool } from '../db/pool.js'
 import { app, createApp } from '../app.js'
 
 afterAll(async () => {
@@ -10,6 +10,12 @@ describe('paginas publicas', () => {
     it('responde 200 en la home', async () => {
         const response = await supertest(app).get('/')
         expect(response.status).toBe(200)
+    })
+
+    it('el pool activo es el de db/pool.js', () => {
+        expect(pool.options.max).toBe(10)
+        expect(pool.options.idleTimeoutMillis).toBe(30_000)
+        expect(pool.options.connectionTimeoutMillis).toBe(5_000)
     })
 
     it('el healthcheck no depende de la base de datos', async () => {

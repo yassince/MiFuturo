@@ -1,4 +1,4 @@
-import { pool } from '../MySQL/conexion.js';
+import { pool } from '../db/pool.js';
 import { z } from 'zod';
 import { escapeHtml } from './security/html.js';
 import { esAdmin } from './roles.js';

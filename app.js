@@ -4,7 +4,6 @@ import session from 'express-session'
 import connectPgSimple from 'connect-pg-simple'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
-import { Pool } from 'pg'
 import { randomBytes } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import 'dotenv/config'
@@ -14,6 +13,7 @@ import UserRouter from './routes/user.js'
 import cuentaRouter from './routes/cuenta.js'
 import adminRouter from './routes/admin.js'
 import { opcionesCookie } from './Logic/security/cookie.js'
+import { pool } from './db/pool.js'
 
 let ephemeralSecret
 
@@ -36,15 +36,9 @@ function buildSessionStore() {
     }
 
     const PgSession = connectPgSimple(session)
-    const pgPool = new Pool({
-        connectionString: process.env.DATABASE_URL,
-        ssl: {
-            rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true',
-        },
-    })
 
     return new PgSession({
-        pool: pgPool,
+        pool,
         tablename: 'session',
     })
 }

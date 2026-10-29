@@ -1,4 +1,4 @@
-import { pool } from '../MySQL/conexion.js'
+import { pool } from '../db/pool.js'
 
 export class CuentaModel {
 

@@ -10,13 +10,13 @@
 - Consulta de movimientos bancarios
 - Realización de transferencias
 - Gestión de productos financieros (tarjetas, cuentas)
-- Base de datos integrada con MySQL
+- Base de datos integrada con PostgreSQL
 
 ## 🧰 Tecnologías utilizadas
 
 - **Backend:** Node.js, Express
 - **Frontend:** Astro (generador de páginas estáticas)
-- **Base de datos:** MySQL
+- **Base de datos:** PostgreSQL (`pg`)
 - **Arquitectura:** MVC (Modelo-Vista-Controlador)
 
 ## 🌐 Despliegue
@@ -30,7 +30,7 @@ MiFuturo/
 ├── Controllers/       # Lógica de control de rutas
 ├── Logic/             # Reglas de negocio
 ├── Models/            # Modelos y conexión con base de datos
-├── MySQL/             # Scripts y configuración de la base de datos
+├── db/                # Pool único de PostgreSQL
 ├── routes/            # Rutas de la API
 ├── dist/              # Archivos de producción (Astro)
 ├── server.js          # Archivo principal del servidor
