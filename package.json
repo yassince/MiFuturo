@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "test": "jest --watch"
+    "test": "NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --watchAll=false",
+    "test:watch": "NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --watch"
   },
   "keywords": [],
   "author": "",
@@ -16,10 +17,11 @@
     "@oslojs/encoding": "^1.1.0",
     "bcryptjs": "^3.0.2",
     "connect-pg-simple": "^10.0.0",
-    "csurf": "^1.2.2",
     "dotenv": "^16.5.0",
     "express": "5.1.0",
+    "express-rate-limit": "^8.7.1",
     "express-session": "^1.18.1",
+    "helmet": "^8.3.0",
     "pg": "^8.16.3",
     "zod": "^3.25.32"
   },
